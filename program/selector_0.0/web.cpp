@@ -455,7 +455,7 @@ bool TWebServer::tagProcessing(String& tag ){ // если тэг типа input 
         if( val == NOT_CONFIG_VARIABLE ){ 
               val = D.getParam( name ); 
               if( val == NOT_STATE_VARIABLE ){ return false; };  // если параметр не нашли в конфиге и в структуре состояния устройтсва D, то выбрасываемся и выше обрабатываем ошибку (или не обрабатываем :) )
-        };  
+        }; 
         st = tag.indexOf("value=\"");    // пробелы до = и после убраны при чтении тэга
         fin = tag.indexOf("\"", st+7);         
         if( (st != -1) && (fin != -1) && ( st < fin) ){ //  если нашли value в тэге
