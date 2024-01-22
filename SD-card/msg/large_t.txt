@@ -1,0 +1,1 @@
+A large time of the main cycle of the microcontroller.

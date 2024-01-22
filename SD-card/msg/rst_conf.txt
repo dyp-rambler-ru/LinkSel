@@ -1,0 +1,1 @@
+Reset button is pressed when this device is turned on. Device settings have been reset to default.

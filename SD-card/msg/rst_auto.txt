@@ -1,0 +1,1 @@
+The automatic mode of switching ports A and B. is reset. There are no settings for working in automatic mode. The operating mode is manual.

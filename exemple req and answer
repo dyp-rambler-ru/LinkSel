@@ -1,0 +1,107 @@
+запрос корневой страницы
++GET / HTTP/2
+Host: ask-feo.ru
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate, br
+Referer: https://www.google.com/
++Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: cross-site
+
+ответ
++HTTP/2 200 
+server: nginx-reuseport/1.21.1
+?date: Sat, 25 Nov 2023 18:18:42 GMT
++content-type: text/html; charset=UTF-8
+vary: Accept-Encoding
+x-powered-by: PHP/7.4.33
+vary: Accept-Encoding,Cookie
+cache-control: max-age=3, must-revalidate
+last-modified: Sat, 25 Nov 2023 18:11:29 GMT
+content-encoding: gzip
+X-Firefox-Spdy: h2
+
+
+
+запрос другой страницы (о нас)
+
++GET /o-nas HTTP/2
+Host: ask-feo.ru
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate, br
++Connection: keep-alive
+Referer: https://ask-feo.ru/
+Cookie: _ym_uid=1646503247796123350; _ym_d=1700936323; _ym_isad=2
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+TE: trailers
+
+ответ
+
++HTTP/2 200 
+server: nginx-reuseport/1.21.1
+date: Sat, 25 Nov 2023 18:38:26 GMT
++content-type: text/html; charset=UTF-8
+vary: Accept-Encoding
+x-powered-by: PHP/7.4.33
+vary: Accept-Encoding,Cookie
+last-modified: Mon, 13 Feb 2023 12:07:10 GMT
+content-encoding: gzip
+X-Firefox-Spdy: h2
+
+
+ответ для не существующей страницы
+
++HTTP/2 404 
+server: nginx-reuseport/1.21.1
+?date: Sat, 25 Nov 2023 18:39:36 GMT
++content-type: text/html; charset=UTF-8
+vary: Accept-Encoding
+x-powered-by: PHP/7.4.33
+vary: Accept-Encoding,Cookie
+expires: Wed, 11 Jan 1984 05:00:00 GMT
+cache-control: no-cache, must-revalidate, max-age=0
+content-encoding: gzip
+X-Firefox-Spdy: h2
+
+
+
+зпаолнение полей в форме обратной связи и отправка по кнопке Отправить
+
++POST /obratnaya-svyaz-2 HTTP/1.1
+Host: ask-feo.ru
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
++Content-Length: 239
+Origin: null
++Connection: keep-alive
+Cookie: _ym_uid=1646503247796123350; _ym_d=1700936323; _ym_isad=2
+Upgrade-Insecure-Requests: 1
+
+
+ответ  почему 301? 
++HTTP/1.1 301 Moved Permanently
+Server: nginx-reuseport/1.21.1
+Date: Sat, 25 Nov 2023 18:42:32 GMT
++Content-Type: text/html; charset=UTF-8
++Content-Length: 0
++Connection: keep-alive
++Keep-Alive: timeout=30
+X-Powered-By: PHP/7.4.33
+Vary: Accept-Encoding,Cookie
+X-Redirect-By: WordPress
+Location: https://ask-feo.ru/obratnaya-svyaz-2
+
+направлена страница с текстом в ответ на форму обратной связи

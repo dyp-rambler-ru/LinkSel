@@ -1,0 +1,1 @@
+Failed to send ping. No link with a switch?

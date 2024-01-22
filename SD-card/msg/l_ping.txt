@@ -1,0 +1,1 @@
+A new threshold has been set for the loss of pings from the total number of pings sent.

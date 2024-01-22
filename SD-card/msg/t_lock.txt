@@ -1,0 +1,1 @@
+A new value has been set for the delay of switching to the previous channel.

@@ -1,0 +1,45 @@
+
+Stratum 1:
+ntp1.vniiftri.ru
+
+ntp2.vniiftri.ru
+
+ntp3.vniiftri.ru
+
+ntp4.vniiftri.ru
+
+ntp1.niiftri.irkutsk.ru
+
+ntp2.niiftri.irkutsk.ru
+
+vniiftri.khv.ru
+
+vniiftri2.khv.ru
+
+Stratum 2:
+ntp21.vniiftri.ru
+
+Mobatime:
+Stratum 1:
+ntp.mobatime.ru
+
+NTP SERVERS:
+Stratum 1:
+ntp1.stratum1.ru
+
+ntp2.stratum1.ru
+
+ntp3.stratum1.ru
+
+ntp4.stratum1.ru
+
+ntp5.stratum1.ru
+
+Stratum 2:
+ntp2.stratum2.ru
+
+ntp3.stratum2.ru
+
+ntp4.stratum2.ru
+
+ntp5.stratum2.ru

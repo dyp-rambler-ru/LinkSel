@@ -1,0 +1,1 @@
+A new total number of pings being sent has been set.

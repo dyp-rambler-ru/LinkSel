@@ -1,0 +1,1 @@
+Configuration file format error. The file is overwritten with the default settings.

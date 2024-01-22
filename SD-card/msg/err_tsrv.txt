@@ -1,0 +1,1 @@
+Automatic time synchronization. Error receiving time from the timeserver. The time is not updated.
