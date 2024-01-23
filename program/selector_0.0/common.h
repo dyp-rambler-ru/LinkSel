@@ -35,7 +35,7 @@
 
 #define W5500_RESET 40  // сброс сетевой карты
 
-const char port[] PROGMEM ="port";
+const char portN[] PROGMEM ="port";
 const char auto_SW[] PROGMEM ="autoSW";     
 const char lostPing[] PROGMEM ="lostPing";   
 const char workTimeA[] PROGMEM ="workTimeA";  

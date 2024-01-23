@@ -67,14 +67,13 @@ bool readLn( File f, String& s ){  // чтение строки из файла,
   if( !f.available() ){ return false; };
   while ((c = f.read()) != -1) {  // читаем в с пока что то есть в файле      
     // если есть возврат каретки или перевод строки, то выход из цикла
-    if ((c != '\r') && (c != '\n')) {   s = s + c;   }
+    if ((c != '\r') && (c != '\n')) {   s = s + c; }
     else{  break; };  // если возврат каретки или перевод строки то выходим из цикла
   };
   // пропускаем все возвраты и переводы строки  CR, LF и CR+LF, для следующего чтения из файла
-  while ( c = f.peek() != -1 ) {    
-    if ((c == '\n') || (c == '\r') ) { f.read(); };  //читать символ
-  };
-  return true;
+  while( (f.peek() == '\n') || (f.peek() == '\r') ){ f.read(); };
+  if( f.available() == -1){ s = s + F(" \n\r -- end of file --"); return false; }  // вдруг уже конец файла
+  else{ return true; };
 }
 
 void resetMCU(){
@@ -96,8 +95,8 @@ _PRN("-------------------------------    get PARAM  ----------------------------
 _LOOK(name)
   char* c_name = name.c_str();
   // индусский код детектед  
-  if( strcmp_P( c_name, port) == 0 ){  
-    if( port == 0 ){  return String("A"); }
+  if( strcmp_P( c_name, portN) == 0 ){  
+    if( port == 0 ){  return String("A"); } 
     else if( port == 1 ){  return String("B"); }   
     else{  return String("-"); };
     };
