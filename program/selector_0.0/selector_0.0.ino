@@ -281,12 +281,11 @@ void loop() {
   unsigned long Tstart = millis();
   //  **********************************************  ЧТЕНИЕ СОСТОЯНИЯ ОБОРУДОВАНИЯ И КОНТРОЛЛЕРА   ************************************************************
   num_cycle++;
-
   D.Date_Time = watch.gettime("Y-m-d H:i:s");  // обновляем время
   // переносим время в конфигурацию
   config.setField( "date", D.Date_Time.substring(0, D.Date_Time.indexOf(" ")) );
   config.setField( "time", D.Date_Time.substring(D.Date_Time.indexOf(" ")+1) );
-  
+
 // проверенно при периоде опроса тайм сервера 30 сек, на 89.109.251.21- ntp1.vniiftri.ru. нормальный опрос- таймаут 23 раза по 30 сек- сообщение в файл- восстановление нормального опроса (восстановление подключения RJ-45 )
   // если интервал истек, то синхронизируемся с time server  
   if( !( config.field.timeServerIP[0] == 127 && config.field.timeServerIP[1] == 0 && config.field.timeServerIP[2] == 0 && config.field.timeServerIP[3] == 1 ) ){  // вообще по настройкам требуется обращение к тайм серверу ?
@@ -306,10 +305,8 @@ void loop() {
       };
     };// если интервал истек, то синхронизируемся с time server
 };  // сервер не 127.0.0.1
-      
 // если истек период проверки результата и посылки следующего пинга то
 if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){   
-  _PRN("ping")
   counters.start( Tping ); // перезапуск таймера
 // обработка пинга - разобрать какое состояние сейчас после предыдущей отправки
   switch( echoResult.status ){  // если ASYNC_SENT то запрос послан, ожидаем ответ - ничего не делать      
@@ -419,7 +416,7 @@ else if( webServer.isFinished() ){  // вэб сервер завершил об
     webConfig.verifySetup();  // проверяем допустимость установок и корректируем их при необходимости
     applyChangeConfig(); //сравниваем были ли изменения в конфигурацию переносим изменения в основную конфигурацию и отрабатываем изменения
 
-/*
+
 _PRN("after web ----------------------------------------------------------------------------------");
 _LOOK_IP(config.field.IP); 
 _LOOK_IP(config.field.maskIP); 
@@ -440,7 +437,7 @@ _LOOK(config.field.date);
 _LOOK(config.field.time);   
 _LOOK(config.field.login);   
 _LOOK(config.field.password);     
-*/
+
 }
 else{   //иначе такт работы вэб сервера
       webServer.run(); // такт работы сделан и рестартуем таймер тайм аута
@@ -518,7 +515,6 @@ if( D.autoSW ){//  если авто режим
   };
 };//  если авто режим 
 */
-
 // реакция на кнопку коротко и длинно - ОК
 bool buttonOn = !digitalRead( SW_SWITCH );  // 1 - если кнопка сейчас нажата
 // обработка нажатий на кнопку ручного управления
@@ -546,7 +542,6 @@ if( buttonOn ){ //кнопка нажата
   };
 };
 // кнопка нажата и была нажата - ничего
-
 // вывод индикации в соотвтествии с сотоянием устройства
 if( D.autoSW ){ digitalWrite( LED_AUTO, LED_ON); }
 else{ digitalWrite( LED_AUTO, LED_OFF); };
@@ -643,11 +638,11 @@ void applyChangeConfig(){  // функция проверки изменений
       };    
 
     // если таймсервер 127.0.0.1
-    if( (webConfig.field.timeServerIP[0] = 127) && (webConfig.field.timeServerIP[1] = 0) && (webConfig.field.timeServerIP[2] = 0) && (webConfig.field.timeServerIP[3] = 1) ){ 
+    if( (webConfig.field.timeServerIP[0] == 127) && (webConfig.field.timeServerIP[1] == 0) && (webConfig.field.timeServerIP[2] == 0) && (webConfig.field.timeServerIP[3] == 1) ){ 
       // если время или дата не совпадают  
       if( ( strcmp( config.field.date, webConfig.field.date ) != 0 ) || ( strcmp( config.field.time, webConfig.field.time ) != 0 ) ){ 
           String d = webConfig.getField("date");
-          String t = webConfig.getField("time");      
+          String t = webConfig.getField("time");   
           //	(сек, мин, час, день, мес, год, день_недели)
           watch.settime( t.substring( t.lastIndexOf(":") + 1 ).toInt(), // сек
                          t.substring( t.indexOf(":") +1, t.lastIndexOf(":") ).toInt(),  // мин

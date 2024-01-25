@@ -95,25 +95,25 @@ _PRN("-------------------------------    get PARAM  ----------------------------
 _LOOK(name)
   char* c_name = name.c_str();
   // индусский код детектед  
-  if( strcmp_P( c_name, portN) == 0 ){  
+  if( strcmp_P( c_name, pgm_port) == 0 ){  
     if( port == 0 ){  return String("A"); } 
     else if( port == 1 ){  return String("B"); }   
     else{  return String("-"); };
     };
-  if( strcmp_P( c_name, auto_SW) == 0 ){ 
+  if( strcmp_P( c_name, pgm_autoSW) == 0 ){ 
     if( autoSW ){  return String("Auto");   }
     else{ return String("Manual");  };
   };
-  if( strcmp_P( c_name, lostPing) == 0 ){  return String(lostPing);   };
-  if( strcmp_P( c_name, workTimeA) == 0 ){  return String(workTime[0]);   };
-  if( strcmp_P( c_name, workTimeB) == 0 ){  return String(workTime[1]);   };
-  if( strcmp_P( c_name, totalLostA) == 0 ){  return String(totalLost[0]);   };
-  if( strcmp_P( c_name, totalLostB) == 0 ){  return String(totalLost[1]);   };
-  if( strcmp_P( c_name, lostPerMinA) == 0 ){  return String(lostPerMin[0]);   };
-  if( strcmp_P( c_name, lostPerMinB) == 0 ){  return String(lostPerMin[1]);   };
-  if( strcmp_P( c_name, upTime) == 0 ){  return String(upTime);   };
-  if( strcmp_P( c_name, DateTime) == 0 ){  return String(Date_Time);   };
-  if( strcmp_P( c_name, scheduledRst) == 0 ){  return String(scheduledReset);   };
+  if( strcmp_P( c_name, pgm_lostPing) == 0 ){  return String(lostPing);   };
+  if( strcmp_P( c_name, pgm_workTimeA) == 0 ){  return String(workTime[0]);   };
+  if( strcmp_P( c_name, pgm_workTimeB) == 0 ){  return String(workTime[1]);   };
+  if( strcmp_P( c_name, pgm_totalLostA) == 0 ){  return String(totalLost[0]);   };
+  if( strcmp_P( c_name, pgm_totalLostB) == 0 ){  return String(totalLost[1]);   };
+  if( strcmp_P( c_name, pgm_lostPerMinA) == 0 ){  return String(lostPerMin[0]);   };
+  if( strcmp_P( c_name, pgm_lostPerMinB) == 0 ){  return String(lostPerMin[1]);   };
+  if( strcmp_P( c_name, pgm_upTime) == 0 ){  return String(upTime);   };
+  if( strcmp_P( c_name, pgm_Date_Time) == 0 ){  return String(Date_Time);   };
+  if( strcmp_P( c_name, pgm_scheduledReset) == 0 ){  return String(scheduledReset);   };
   //а если не нашли имени
   return NOT_STATE_VARIABLE;
 }

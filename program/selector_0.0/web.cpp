@@ -264,7 +264,11 @@ bool TWebServer::setParam(String& s) {  // извлекаем параметры
       };
       _LOOK(name)
       _LOOK(val)
-      res = res && webConfig.setField(name, val);      //      записать в Setup и установить флаг
+      // костыль, в web двоеточие идет как %3A заменяем в val на : чтоб дальше все нормально работало
+      val.replace("%3A",":");
+      _LOOK(name)
+      _LOOK(val)
+      res = res && webConfig.setField(name, val);     
       _LOOK(res)
       if (sep != -1) { st = sep + 1; }  // переходим к следующему параметру по разделителю &
       else {  st = -1;   };

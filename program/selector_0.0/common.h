@@ -35,18 +35,18 @@
 
 #define W5500_RESET 40  // сброс сетевой карты
 
-const char portN[] PROGMEM ="port";
-const char auto_SW[] PROGMEM ="autoSW";     
-const char lostPing[] PROGMEM ="lostPing";   
-const char workTimeA[] PROGMEM ="workTimeA";  
-const char workTimeB[] PROGMEM ="workTimeB";  
-const char totalLostA[] PROGMEM ="totalLostA"; 
-const char totalLostB[] PROGMEM ="totalLostB"; 
-const char lostPerMinA[] PROGMEM ="lostPerMinA";   
-const char lostPerMinB[] PROGMEM ="lostPerMinB";   
-const char upTime[] PROGMEM ="upTime";
-const char DateTime[] PROGMEM ="Date_Time";
-const char scheduledRst[] PROGMEM ="scheduledReset";
+const char pgm_port[] PROGMEM ="port";
+const char pgm_autoSW[] PROGMEM ="autoSW";     
+const char pgm_lostPing[] PROGMEM ="lostPing";   
+const char pgm_workTimeA[] PROGMEM ="workTimeA";  
+const char pgm_workTimeB[] PROGMEM ="workTimeB";  
+const char pgm_totalLostA[] PROGMEM ="totalLostA"; 
+const char pgm_totalLostB[] PROGMEM ="totalLostB"; 
+const char pgm_lostPerMinA[] PROGMEM ="lostPerMinA";   
+const char pgm_lostPerMinB[] PROGMEM ="lostPerMinB";   
+const char pgm_upTime[] PROGMEM ="upTime";
+const char pgm_Date_Time[] PROGMEM ="Date_Time";
+const char pgm_scheduledReset[] PROGMEM ="scheduledReset";
 
 
 // ====================================================  ГЛАВНАЯ ГЛОБАЛЬНАЯ СТРУКТУРА  ==================================================================

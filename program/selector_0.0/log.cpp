@@ -9,8 +9,9 @@
 Tlog::Tlog(){    // конструктор
 }
 
-void Tlog::clear(){   // очистка файла лога
-
+void Tlog::clear(){   // очистка файла лога 
+    SD.remove( LOG_FILE );
+    Log.writeMsg( F("new_log") ); 
 }
 
 bool Tlog::write(String msg){  // записать в лог файл сообщение msg. К сообщению дописывается текущая дата и время  

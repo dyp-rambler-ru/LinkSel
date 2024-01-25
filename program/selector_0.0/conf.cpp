@@ -83,7 +83,6 @@ bool TSetup::verifySetup(){  //  проверка корректности да�
     lim = ( hh < 0 ) || ( hh > 23 ) || ( mm < 0 ) || ( mm > 59 ) || ( ss < 0 ) || ( ss > 59 );
     flag = flag | lim;
     if ( lim ){   String s = DEFAULT_TIME;   s.toCharArray(field.time, 9);  };
-   
     //  login[8]  и    password[8] не проверяются
     // доп проверки
     if( field.timeoutPing > field.timePing * 1000 ){ field.timeoutPing = field.timePing * 1000; flag = true; };
@@ -222,8 +221,6 @@ bool TSetup::load( String fileName ){ // чтение установок из ф
     String val = s.substring(n + 1);
     name.trim();
     val.trim();
-    _LOOK(name)
-    _LOOK(val)
     res = res && setField( name, val );  // устанавливаем параметр и учитываем успешность этого в возвращаемом значении
   };    
   f.close();
