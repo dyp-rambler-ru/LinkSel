@@ -30,7 +30,7 @@ iarduino_RTC watch(RTC_DS1302, PIN_RST, CLK, DAT);  // Объявляем объ
 // инициализируем контроллер Ethernet
 const byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-//  ?? временно прямое назначение , в рабочей создавать пустые и присвоение в setuo
+//  ?? временно прямое назначение , в рабочей создавать пустые и присвоение в setup
 /*
   IPAddress ip(10, 140, 33, 147);// собственный алрес Ethernet интерфейса
   IPAddress ip_dns(10, 140, 33, 1);
@@ -56,8 +56,6 @@ NTPClient timeClient(ntpUDP, TS);
 //NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 // You can specify the time server pool and the offset, (in seconds)
 // additionally you can specify the update interval (in milliseconds).
-
-bool flagEmptyLine;   // ??? временно для пробы простого вэб сервера
 
 bool WaitAnswer;  // признак что пинг отправлен и ждем ответа
 bool BusyWebServer;  // вэб сервер занят обработкой  запроса от клиента к интерфейсу конфигурации
@@ -147,7 +145,7 @@ void setup() {
     _PRN("set Def ")
   };
 
-// ?????  временно для отладки
+// ???  временно для отладки
   config.resetLoginPassword();
   config.field.login[0] = 'q';  config.field.login[1] = 0;
   config.field.password[0] = '1';    config.field.password[1] = 0;
@@ -205,22 +203,28 @@ _LOOK(config.field.password);
   timeClient.setPoolServerName( TS_IP.c_str() ); // устанавливаем адрес сервера времени
   timeClient.begin(); // config.field.portTimeServer ); ?? // активация клиента времени
 _PRN("time request")
-  //  ??? что делать ? этот таймер перестраиваемый  returnA = 3 
+
+    D.calcDelayReturnA = conf.field.delayReturnA;  // устанавливаем начальную задержку  
   counters.load( Tping, config.field.timePing * 1000 );// настраиваем период повторения пинга (переводим в мс)
   counters.load( SyncTimeSrv, 3600 * 1000 );  // период обновления времени с тайм сервера - 1 час
   counters.load( LockSwitch, config.field.delayBackSwitch * 1000);
-  counters.load( returnA, config.field.delayReturnA * 1000);
+  counters.load( returnA, D.calcDelayReturnA * 1000);
   counters.load( timeOutWeb, 1 * 1000);  // тайм аут обслуживания клиента 1 сек
   // не используется counters.load( oneHour, 3600 * 1000);  // таймер на 1 час
   counters.load( press3s, 3 * 1000);  // таймер на 3 сек - длительное нажатие на кнопку
 
   counters.resetAll();  // первичный сброс всех счетчиков, рестарт произойдет в основном цикле после срабатывания условий
+
+    // явно переключаемся на канал А
+  digitalWrite(OUT_K, LAN_A_ON);
+  digitalWrite(LED_LAN_A, LED_ON);
+  digitalWrite(LED_LAN_B, LED_OFF);
  
   // ??  убрать после отладки ICMPPing::setTimeout(PING_REQUEST_TIMEOUT_MS);  // надо ставить таймаут из конфига.
   ICMPPing::setTimeout( config.field.timeoutPing ); 
   ping.asyncStart(config.field.pingIP, 1, echoResult); //послать первый запрос 
   //  замер количества свободной памяти
-  vRAM = memoryFree(); // запоминаем количество свободного места в ОЗУ  
+  vRAM = memoryFree(); // запоминаем количество с   вободного места в ОЗУ  
 
   _LOOK(vRAM)
 /*
@@ -305,6 +309,8 @@ void loop() {
       };
     };// если интервал истек, то синхронизируемся с time server
 };  // сервер не 127.0.0.1
+
+//  ------------------------ PING -----------------------------
 // если истек период проверки результата и посылки следующего пинга то
 if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){   
   counters.start( Tping ); // перезапуск таймера
@@ -316,12 +322,15 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
       for( byte i = 0; i < 4; i++){   eqAddrIP = eqAddrIP & (echoResult.addr[i] == config.field.pingIP[i]); };
       if( eqAddrIP ){  // адрес ответа совпадаетс адресом посылки
           pingResult.set( true );
+          digitalWrite(LED_PING, LED_ON);  //  включаем индикатор успешного пинга
           D.lostPing = 0; // сбрасываем счетчик непрпрывно потеряных пакетов
+          если канал А , то устанавливаем calcDelayReturnA = delayReturnA; и загружаем в счетчик т.к. был хороший пинг и канал А был исправен
           _PRN(" SUCCESS ");
           if( !pingResult.get( 1 ) ){ Log.writeMsg( F("ping_ok") );  }// если прошлый пинг (1 - т.к. уже сохранили текущий результат в 0) был потерян то сообщение в лог восствновлении связи     
       }
       else{  // ответил другой хост
           pingResult.set( false );
+          digitalWrite(LED_PING, LED_OFF);  //  выключаем индикатор успешного пинга
           _PRN(" other host answer ");
           D.lostPing++;
           D.totalLost[D.port]++;    
@@ -331,6 +340,7 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
     };
     case SEND_TIMEOUT:{  // Время ожидания отправки запроса истекло не могу отправить запрос . вероятно нет линка
       pingResult.set( false );
+      digitalWrite(LED_PING, LED_OFF);  //  выключаем индикатор успешного пинга
       _PRN(" send timeout ");
       if( pingResult.get( 1 ) ){ Log.writeMsg( F("fld_ping") ); }; // если прошлый пинг (1 - т.к. уже сохранили текущий результат в 0) был нормальный то сообщение в лог о проблемах      
       break;
@@ -338,6 +348,7 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
     case NO_RESPONSE:{ // превышено время ожидания ответа 
     _PRN(" ping lost ");
       pingResult.set( false );
+      digitalWrite(LED_PING, LED_OFF);  //  выключаем индикатор успешного пинга
       D.lostPing++;
       D.totalLost[D.port]++;    
       if( pingResult.get( 1 ) ){ Log.writeMsg( F("lost_png") );  }; // если прошлый пинг (1 - т.к. уже сохранили текущий результат в 0) был нормальный то сообщение в лог о потере связи              
@@ -346,6 +357,7 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
     case BAD_RESPONSE:{  // получен неверный ответ сервера 
     _PRN(" bad response ");
       pingResult.set( false );
+      digitalWrite(LED_PING, LED_OFF);  //  выключаем индикатор успешного пинга
       D.lostPing++;
       D.totalLost[D.port]++;    
       if( pingResult.get( 1 ) ){ Log.writeMsg( F("bad_resp") );  }; // если прошлый пинг (1 - т.к. уже сохранили текущий результат в 0) был нормальный то сообщение в лог о потере связи              
@@ -367,27 +379,36 @@ _LOOK(echoResult.status)
   };
 };//  если сработал счетчик Tping
 
-/*
+
 // счетчик LockSwitch для задержки переключения если оба канала не работают
-// если потерь подряд или потерь из заданного количества больше порога и таймер запрета перехода на другой канал истек, то    
-if( (( D.lostPing >= config.field.maxLostPing ) || !pingResult.isOK( config.field.maxLosesFromSent, config.field.numPingSent) ) && counters.isOver( LockSwitch ) ){  // переключаемся на другой канал
-  changePort(); 
-  if (D.port == 0) { Log.writeMsg( F("auto_toA") ); }  // канал А теперь
-  else{ Log.writeMsg( F("auto_toB") ); }  // канал B теперь
-  counters.start( LockSwitch );  // а если это пробное переключение? надо состояние переключения "из-за потерь" из-за возврата на приоритетный канал"  ??
-  if( D.port == 1 ){ counters.start( returnA ); };  // если переключились на B, то запускаем счетчик возврата на канал А
+// если авторежим и потерь подряд или потерь из заданного количества больше порога и таймер запрета перехода на другой канал истек, то    
+if(  D.autoSW && (( D.lostPing >= config.field.maxLostPing ) || !pingResult.isOK( config.field.maxLosesFromSent, config.field.numPingSent) ) && counters.isOver( LockSwitch ) ){  // переключаемся на другой канал
+    changePort(); 
+    if (D.port == 0) { Log.writeMsg( F("auto_toA") ); }  // канал А теперь
+    else{ Log.writeMsg( F("auto_toB") ); }  // канал B теперь
+    counters.start( LockSwitch );  // а если это пробное переключение? надо состояние переключения "из-за потерь" из-за возврата на приоритетный канал"  ??
+    if( D.port == 1 ){    нужно проверку параметров - возможен ли запуск автовозврата // если переключились на B, то запускаем счетчик возврата на канал А
+        counters.start( returnA ); 
+        если автовозврат с А  и на А были только потери lostPing в период  LockSwitch то рассчитываем новую задержку с увеличенным шагом, загружаем счетчик новым значением и запускаем счетчик
+        if(){
+            
+        };
+    };   
 };
 
 
 // ??если не было возврата на основной канал, то обрабатываем потерю ping, сбрасываем счетчик интервала ping и счетчик ожидания ответа
 // ?? если был возврат на основной канал и потерь больше допустимого, то возвращаемся на резервный канал 
 
-   // если канал В и истекло время автовозврата, то возвращаемся на А
-  if( ( D.port == 1 ) && counters.isOver( returnA ) ){ 
+//  ------------------  AUTO RETURN TO A  -------------------------------
+   // если автоматический режим и автовозврат настроен и канал В и истекло время автовозврата, то возвращаемся на А
+if( autoSW  && (delayReturnA > 0) && ( D.port == 1 ) && counters.isOver( returnA ) ){ 
     changePort(); 
     Log.writeMsg( F("ret_toA") ); 
-  };
- */
+    autoReturnA = true;  // флаг автовозврата на А
+    где используем stepDelay ??? 
+};
+ 
 
 
  // ========================    обработка запросов к вэб интерфейсу   ==========================
@@ -400,9 +421,6 @@ if( webServer.isWait() ){  //если вэб сервер в ожидании
     _PRN("New request from client:");
     webConfig.load( config );  // копируем текущую конфигурацию для вэб страницы
     webConfig.resetLoginPassword();
-    _PRN("####################################################     login")
-    _LOOK(webConfig.field.login);
-
     webServer.startConnection( client );
     counters.start( timeOutWeb );    
   };  
@@ -454,52 +472,6 @@ if( counters.isOver( timeOutWeb ) ){  //если истек тайм аут то
 };
  */
 
- /* 
-// ----------------------  тестовый вариант работы выдающий простую страницу
-if( !WaitAnswer ){ //если вэбсервер не занят обработкой данных от клиента и нет ожидания пинга  
-  client = server.available(); // ожидаем объект клиент
-  if (client) {
-    flagEmptyLine = true;
-    Serial.println("New request from client:");
-
-    while (client.connected()) {
-      if (client.available()) {
-        char tempChar = client.read();
-        Serial.write(tempChar);
-
-        if (tempChar == '\n' && flagEmptyLine) {
-          // пустая строка, ответ клиенту
-          client.println("HTTP/1.1 200 OK"); // стартовая строка
-          client.println("Content-Type: text/html; charset=utf-8"); // тело передается в коде HTML, кодировка UTF-8
-          client.println("Connection: close"); // закрыть сессию после ответа
-          client.println("Refresh: 5"); // время обновления страницы !!!! работает и обновляет
-          client.println(); // пустая строка отделяет тело сообщения
-          client.println("<!DOCTYPE HTML>"); // тело сообщения
-          client.println("<html>");
-          client.println("<H1> Первый WEB-сервер</H1>"); // выбираем крупный шрифт
-          client.print("Cycle:"); 
-          client.println( num_cycle );
-          client.println("</html>");
-          break;
-        }
-        if (tempChar == '\n') {   // новая строка
-          flagEmptyLine = true;
-        }
-        else if (tempChar != '\r') {  // в строке хотя бы один символ
-          flagEmptyLine = false;
-        }
-      }
-    }
-    delay(1);
-    // разрываем соединение
-    client.stop();
-    Serial.println("Break");
-  }
-};//если сервер не занят обработкой данных от клиента
-//-------   конец тестового варианта работы выдающего простую страницу   
-*/
-
-/*
 if( D.autoSW ){//  если авто режим 
   if( (( config.field.maxLosesFromSent == 0 ) || ( config.field.numPingSent == 0 )) && ( config.field.maxLostPing == 0 ) ){  // и нет параметров для автоматической работы
     // помигать светодиодом и отключить
@@ -514,7 +486,7 @@ if( D.autoSW ){//  если авто режим
     Log.writeMsg( F("rst_auto") ); // запись о сбросе автоматического режима
   };
 };//  если авто режим 
-*/
+
 // реакция на кнопку коротко и длинно - ОК
 bool buttonOn = !digitalRead( SW_SWITCH );  // 1 - если кнопка сейчас нажата
 // обработка нажатий на кнопку ручного управления
@@ -525,13 +497,17 @@ if( !buttonOn ){
         if( counters.isOver( press3s ) ){   //если таймер истек,         
           //то переключить режим авто и запомнить, что кнопке не была нажата - чтоб не пересечся с переключением канала при коротком нажатии          
           D.autoSW = !(D.autoSW);    
-          if( D.autoSW ){ Log.writeMsg( F("set_auto") );  }
+          if( D.autoSW ){ если канал B то запустить счетчик автовозврата  Log.writeMsg( F("set_auto") );  }
           else{ Log.writeMsg( F("set_man") );  };
         }
-        else{  // таймер 3 сек не истек, значит короткое нажатие и меняем порт
-            changePort( D ); 
-            if (D.port == 0) {  Log.writeMsg( F("man_to_A") ); }  // канал А теперь
-            else{ Log.writeMsg( F("man_to_B") ); }  // канал B теперь
+        else{  // таймер 3 сек не истек, значит короткое нажатие 
+            // если режим авто, то отключаем авторежим
+            if( D.autoSW ){ D.autoSW = False; }
+            else{  // если раежим ручного управления, то переключаем порт
+                changePort( D ); 
+                if (D.port == 0) {  Log.writeMsg( F("man_to_A") ); }  // канал А теперь
+                else{  Log.writeMsg( F("man_to_B") );   }  // канал B теперь
+            };            
         };
     };
 };
@@ -616,8 +592,9 @@ void applyChangeConfig(){  // функция проверки изменений
      };  // задержка переключения обратно в сек, если новый канал тоже не рабочий, необходимо, чтоб в случае отказа обоих каналов не было непрерывного переключения туда-сюда
     if( config.field.delayReturnA != webConfig.field.delayReturnA ){ 
       config.field.delayReturnA = webConfig.field.delayReturnA;  // время до попытки автоматического возврата на порт А  в сек      по умолчанию 1 час
-      counters.load( returnA, config.field.delayReturnA * 1000);
-      counters.start( returnA );
+      D.calcDelayReturnA = conf.field.delayReturnA;  // устанавливаем начальную задержку  
+      counters.load( returnA, D.calcDelayReturnA * 1000);      
+       если таймер работает то рестарт counters.start( returnA );
       Log.writeMsg( F("d_ret_a.txt") ); 
       } ;   
     if( config.field.stepDelay != webConfig.field.stepDelay ){ config.field.stepDelay = webConfig.field.stepDelay;   Log.writeMsg( F("step_d.txt") );    };      // шаг приращения задержки до автоматического возврата на порт А , если предыдущая попытка возврата быле НЕ успешной

@@ -152,7 +152,7 @@ _PRN(" web run ")
   return;
 }
 
-/* ??
+/* 
 https://webkyrs.info/post/http-zapros-metodom-post
 Если, для того, чтобы обратиться к серверу методом GET, нам достаточно было набрать запрос в URL-адрес, то в методе POST все работает по другому принципу.
 Для того, чтобы выполнить этот вид запроса, нам необходимо нажать на кнопку с атрибутом type="submit", которая расположена на веб-странице. Обратите внимание,
@@ -214,7 +214,6 @@ _LOOK(_counterL)
         res = true;
       };
       // продолжаем обработку заголовка запроса - найти куку от Cookie: LinkSel= до CR+LF
-      // ??? Cookie: LinkSel=100
       if (_req.indexOf("Cookie: LinkSel=") != -1) {
         _PRN(F("#### recived Cookie"))
         _LOOK(_req)
@@ -227,7 +226,7 @@ _LOOK(_counterL)
         receivedID = 0;
       };
       _stateReadReq = Body;   // переходим к чтению тела сообщения, т.к. заголовок уже прочли
-      _req.remove(0, _req.indexOf("\r\n\r\n") + 4);// ?????????   + 1);  // убираем из _req заголовок ( +4 чтоб убрать CR+LF+CR+LF и +1 чтоб получить количество символов из позиции- учет что первый символ с 0 индексом)
+      _req.remove(0, _req.indexOf("\r\n\r\n") + 4); // убираем из _req заголовок 
       return res;
     }
   }
@@ -525,7 +524,7 @@ void TWebServer::sendStdAnswer( uint16_t codeAnswer ){ //отправка ста
 void TWebServer::sendHeader( String msg ){ //отправка заголовка ответа сервера 
   _client.print(F("HTTP/1.1 ")); _client.println( msg ); // стартовая строка с кодом ошибки
   _client.println(F("Content-Type: text/html; charset=utf-8")); // тело передается в коде HTML, кодировка UTF-8
-  //  ??? оптимизировать убрав лишнюю функцию и переместив код сюда ( если более нингде не используется)
+  //  ??? нужно ли это и для каких страниц?   client.println("Refresh: 5"); // время обновления страницы !!!! работает и обновляет  
   sendNewSessionID(); // при необходимости посылаем куку ( один раз за сеанс)
   _client.println(F("Connection: close")); // закрыть сессию после ответа
   _client.println(); // пустая строка отделяет тело сообщения

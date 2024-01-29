@@ -38,7 +38,7 @@ int memoryFree() {                                                              
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void changePort( TState _D ) {  // сменить рабочий порт Ethernet
+void changePort( TState& _D ) {  // сменить рабочий порт Ethernet
   _D.lostPing = 0;            // начинаем отсчет подряд потерянных пингов снова на новом канале
   _D.port = (_D.port + 1) % 2; 
   if (_D.port == 0) {  // канал А теперь
@@ -46,8 +46,9 @@ void changePort( TState _D ) {  // сменить рабочий порт Ethern
     digitalWrite(LED_LAN_A, LED_ON);
     digitalWrite(LED_LAN_B, LED_OFF);    
   } else {  // канал В теперь
-    // запустить таймер автовозврата на канал А
-    //??counters.start(returnA);
+    if ( delayReturnA  ?????? maxDelayReturnA > 0){  // запустить таймер автовозврата на канал А если позволяют параметры
+        counters.start(returnA);
+    };
     digitalWrite(OUT_K, LAN_B_ON);
     digitalWrite(LED_LAN_A, LED_OFF);
     digitalWrite(LED_LAN_B, LED_ON);     

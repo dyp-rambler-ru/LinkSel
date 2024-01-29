@@ -35,7 +35,7 @@ bool Tlog::writeMsg( String msgName){       // записать сообщени
   fName = "/" + fName +"/" + msgName + ".txt";     
   msgFile = SD.open(fName, FILE_READ);  
   if( !msgFile ){   
-    //  ?????? добавить запись об исключении - не найден файл ИМЯ ФАЙЛА с информацией для лога  
+    //  ??? добавить запись об исключении - не найден файл ИМЯ ФАЙЛА с информацией для лога  
     return false;
   };    
   uint16_t sizeF= msgFile.size();  
