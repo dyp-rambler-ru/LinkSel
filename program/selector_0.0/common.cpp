@@ -45,10 +45,7 @@ void changePort( TState& _D ) {  // сменить рабочий порт Ether
     digitalWrite(OUT_K, LAN_A_ON);
     digitalWrite(LED_LAN_A, LED_ON);
     digitalWrite(LED_LAN_B, LED_OFF);    
-  } else {  // канал В теперь
-    if ( delayReturnA  ?????? maxDelayReturnA > 0){  // запустить таймер автовозврата на канал А если позволяют параметры
-        counters.start(returnA);
-    };
+  } else {  // канал В теперь  
     digitalWrite(OUT_K, LAN_B_ON);
     digitalWrite(LED_LAN_A, LED_OFF);
     digitalWrite(LED_LAN_B, LED_ON);     

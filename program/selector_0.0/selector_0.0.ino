@@ -204,7 +204,7 @@ _LOOK(config.field.password);
   timeClient.begin(); // config.field.portTimeServer ); ?? // активация клиента времени
 _PRN("time request")
 
-    D.calcDelayReturnA = conf.field.delayReturnA;  // устанавливаем начальную задержку  
+  D.calcDelayReturnA = config.field.delayReturnA;  // устанавливаем начальную задержку  
   counters.load( Tping, config.field.timePing * 1000 );// настраиваем период повторения пинга (переводим в мс)
   counters.load( SyncTimeSrv, 3600 * 1000 );  // период обновления времени с тайм сервера - 1 час
   counters.load( LockSwitch, config.field.delayBackSwitch * 1000);
@@ -323,8 +323,12 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
       if( eqAddrIP ){  // адрес ответа совпадаетс адресом посылки
           pingResult.set( true );
           digitalWrite(LED_PING, LED_ON);  //  включаем индикатор успешного пинга
-          D.lostPing = 0; // сбрасываем счетчик непрпрывно потеряных пакетов
-          если канал А , то устанавливаем calcDelayReturnA = delayReturnA; и загружаем в счетчик т.к. был хороший пинг и канал А был исправен
+          D.lostPing = 0; // сбрасываем счетчик непрпрывно потеряных пакетов          
+          if( D.port == 0 ){ //если канал А , то действия связанные с автовозвратом  т.к. был хороший пинг и канал А был исправен
+            D.autoReturnA = false;   // был "хороший" пинг, значит автовозврат успешный и увеличивать задержку не надо
+            D.calcDelayReturnA = config.field.delayReturnA;
+            counters.load( returnA, D.calcDelayReturnA * 1000);   // загружаем в счетчик
+          };
           _PRN(" SUCCESS ");
           if( !pingResult.get( 1 ) ){ Log.writeMsg( F("ping_ok") );  }// если прошлый пинг (1 - т.к. уже сохранили текущий результат в 0) был потерян то сообщение в лог восствновлении связи     
       }
@@ -380,36 +384,53 @@ _LOOK(echoResult.status)
 };//  если сработал счетчик Tping
 
 
-// счетчик LockSwitch для задержки переключения если оба канала не работают
-// если авторежим и потерь подряд или потерь из заданного количества больше порога и таймер запрета перехода на другой канал истек, то    
-if(  D.autoSW && (( D.lostPing >= config.field.maxLostPing ) || !pingResult.isOK( config.field.maxLosesFromSent, config.field.numPingSent) ) && counters.isOver( LockSwitch ) ){  // переключаемся на другой канал
-    changePort(); 
-    if (D.port == 0) { Log.writeMsg( F("auto_toA") ); }  // канал А теперь
-    else{ Log.writeMsg( F("auto_toB") ); }  // канал B теперь
-    counters.start( LockSwitch );  // а если это пробное переключение? надо состояние переключения "из-за потерь" из-за возврата на приоритетный канал"  ??
-    if( D.port == 1 ){    нужно проверку параметров - возможен ли запуск автовозврата // если переключились на B, то запускаем счетчик возврата на канал А
-        counters.start( returnA ); 
-        если автовозврат с А  и на А были только потери lostPing в период  LockSwitch то рассчитываем новую задержку с увеличенным шагом, загружаем счетчик новым значением и запускаем счетчик
-        if(){
-            
-        };
-    };   
-};
-
-
 // ??если не было возврата на основной канал, то обрабатываем потерю ping, сбрасываем счетчик интервала ping и счетчик ожидания ответа
 // ?? если был возврат на основной канал и потерь больше допустимого, то возвращаемся на резервный канал 
 
-//  ------------------  AUTO RETURN TO A  -------------------------------
-   // если автоматический режим и автовозврат настроен и канал В и истекло время автовозврата, то возвращаемся на А
-if( autoSW  && (delayReturnA > 0) && ( D.port == 1 ) && counters.isOver( returnA ) ){ 
-    changePort(); 
-    Log.writeMsg( F("ret_toA") ); 
-    autoReturnA = true;  // флаг автовозврата на А
-    где используем stepDelay ??? 
-};
- 
 
+// ----------------  если автоматический режим -----------------
+if( D.autoSW){
+
+  // ----------------- ПЕРЕКЛЮЧЕНИЕ НА ДРУГОЙ КАНАЛ, ЕСЛИ ПОТЕРИ PING БОЛЬШЕ ПОГРОГОВ   ---------------------  
+  if( (( D.lostPing >= config.field.maxLostPing ) || !pingResult.isOK( config.field.maxLosesFromSent, config.field.numPingSent) ) && counters.isOver( LockSwitch ) ){  // если потерь подряд или потерь из заданного количества больше порога и таймер запрета перехода на другой канал истек, то    
+      changePort( D ); 
+      if (D.port == 0) { Log.writeMsg( F("auto_toA") ); }  // канал А теперь
+      else{ Log.writeMsg( F("auto_toB") ); }  // канал B теперь
+      counters.start( LockSwitch );  // а если это пробное переключение? надо состояние переключения "из-за потерь" из-за возврата на приоритетный канал"  ??
+      if( (D.port == 1) && ( delayReturnA > 0 ) ){    // если переключились на B и  требуется запуск автовозврата, то вычисляем новую задержку (если необходимо) и запускаем счетчик возврата на канал А        
+          if( D.autoReturnA ){  //  если автовозврат с А  и на А были только потери ( не было сброса autoReturnA, и раз мы здесь, то есть много потерь пингов и истек LockSwitch и ни один успешный пинг не сбросил autoReturnA, то 
+              //рассчитываем новую задержку с увеличенным шагом, загружаем счетчик новым значением и запускаем счетчик
+              D.calcDelayReturnA += stepDelay;
+              if( D.calcDelayReturnA > config.field.maxDelayReturnA){  D.calcDelayReturnA = config.field.maxDelayReturnA;  };  // ограничиваем задержку максимальным  maxDelayReturnA            
+              counters.load( returnA, D.calcDelayReturnA * 1000);   // загружаем в счетчик          
+              D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
+          };           
+          counters.start( returnA );  // запустить таймер автовозврата на канал А ( если мы уже здесь, то автовозврат разрешен)
+      };   
+  };
+
+    //  ------------------  AUTO RETURN TO A  -------------------------------
+    if( (delayReturnA > 0) && ( D.port == 1 ) && counters.isOver( returnA ) ){ // автовозврат настроен и канал В и истекло время автовозврата, то возвращаемся на А
+      changePort( D );     
+      counters.start(returnA);    
+      Log.writeMsg( F("ret_toA") ); 
+      D.autoReturnA = true;  // флаг автовозврата на А
+    };
+
+    //  ---------------------  сброс режима, если нет параметров для работы в режиме Auto    -------------------
+    if( (( config.field.maxLosesFromSent == 0 ) || ( config.field.numPingSent == 0 )) && ( config.field.maxLostPing == 0 ) ){  // и нет параметров для автоматической работы
+        // помигать светодиодом и отключить
+        for( byte i = 0; i<3; i++){
+          digitalWrite( LED_AUTO, LED_OFF);
+          delay(300);
+          digitalWrite( LED_AUTO, LED_ON);
+          delay(300);
+        };
+        digitalWrite( LED_AUTO, LED_OFF);
+        D.autoSW = false;
+        Log.writeMsg( F("rst_auto") ); // запись о сбросе автоматического режима
+      };
+};//  если авто режим 
 
  // ========================    обработка запросов к вэб интерфейсу   ==========================
 // вроде как для W5500 скорость передачи по spi 8МГц т.е. 1 МБ/сек. Т.к. данные надо считывать из microSD по  spi то получаем 500 кБ сек. 
@@ -472,21 +493,6 @@ if( counters.isOver( timeOutWeb ) ){  //если истек тайм аут то
 };
  */
 
-if( D.autoSW ){//  если авто режим 
-  if( (( config.field.maxLosesFromSent == 0 ) || ( config.field.numPingSent == 0 )) && ( config.field.maxLostPing == 0 ) ){  // и нет параметров для автоматической работы
-    // помигать светодиодом и отключить
-    for( byte i = 0; i<3; i++){
-      digitalWrite( LED_AUTO, LED_OFF);
-      delay(300);
-      digitalWrite( LED_AUTO, LED_ON);
-      delay(300);
-    };
-    digitalWrite( LED_AUTO, LED_OFF);
-    D.autoSW = false;
-    Log.writeMsg( F("rst_auto") ); // запись о сбросе автоматического режима
-  };
-};//  если авто режим 
-
 // реакция на кнопку коротко и длинно - ОК
 bool buttonOn = !digitalRead( SW_SWITCH );  // 1 - если кнопка сейчас нажата
 // обработка нажатий на кнопку ручного управления
@@ -497,12 +503,19 @@ if( !buttonOn ){
         if( counters.isOver( press3s ) ){   //если таймер истек,         
           //то переключить режим авто и запомнить, что кнопке не была нажата - чтоб не пересечся с переключением канала при коротком нажатии          
           D.autoSW = !(D.autoSW);    
-          if( D.autoSW ){ если канал B то запустить счетчик автовозврата  Log.writeMsg( F("set_auto") );  }
+          if( D.autoSW ){               
+            if( (D.port == 1) && ( delayReturnA > 0 ) ){  //если канал B то запустить счетчик автовозврата
+            D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
+            counters.start( returnA );  // запустить таймер автовозврата на канал А ( если мы уже здесь, то автовозврат разрешен)
+            };
+            Log.writeMsg( F("set_auto") );  
+            // ??? надо ли здесь запускать еще какие то счетчики?
+          }
           else{ Log.writeMsg( F("set_man") );  };
         }
         else{  // таймер 3 сек не истек, значит короткое нажатие 
             // если режим авто, то отключаем авторежим
-            if( D.autoSW ){ D.autoSW = False; }
+            if( D.autoSW ){ D.autoSW = false; }
             else{  // если раежим ручного управления, то переключаем порт
                 changePort( D ); 
                 if (D.port == 0) {  Log.writeMsg( F("man_to_A") ); }  // канал А теперь
@@ -521,7 +534,6 @@ if( buttonOn ){ //кнопка нажата
 // вывод индикации в соотвтествии с сотоянием устройства
 if( D.autoSW ){ digitalWrite( LED_AUTO, LED_ON); }
 else{ digitalWrite( LED_AUTO, LED_OFF); };
-
 
 // автоматическое восстановление настроек каждый час исключено из программы
 
@@ -592,9 +604,8 @@ void applyChangeConfig(){  // функция проверки изменений
      };  // задержка переключения обратно в сек, если новый канал тоже не рабочий, необходимо, чтоб в случае отказа обоих каналов не было непрерывного переключения туда-сюда
     if( config.field.delayReturnA != webConfig.field.delayReturnA ){ 
       config.field.delayReturnA = webConfig.field.delayReturnA;  // время до попытки автоматического возврата на порт А  в сек      по умолчанию 1 час
-      D.calcDelayReturnA = conf.field.delayReturnA;  // устанавливаем начальную задержку  
-      counters.load( returnA, D.calcDelayReturnA * 1000);      
-       если таймер работает то рестарт counters.start( returnA );
+      D.calcDelayReturnA = config.field.delayReturnA;  // устанавливаем начальную задержку  
+      counters.load( returnA, D.calcDelayReturnA * 1000);      // здесь фактически происходит рестарт счетчика если он работал или просто установка нового значения      
       Log.writeMsg( F("d_ret_a.txt") ); 
       } ;   
     if( config.field.stepDelay != webConfig.field.stepDelay ){ config.field.stepDelay = webConfig.field.stepDelay;   Log.writeMsg( F("step_d.txt") );    };      // шаг приращения задержки до автоматического возврата на порт А , если предыдущая попытка возврата быле НЕ успешной
