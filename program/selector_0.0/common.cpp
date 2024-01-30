@@ -75,9 +75,9 @@ bool readLn( File f, String& s ){  // чтение строки из файла,
 }
 
 void resetMCU(){
-  /*  ???сброс сетевой карты */ 
+  /*  предварительно сброс сетевой карты */ 
   digitalWrite( W5500_RESET, LOW);
-  delay(500);
+  delay(1000);
   digitalWrite( W5500_RESET, HIGH);  
   asm volatile ("jmp 0");
 

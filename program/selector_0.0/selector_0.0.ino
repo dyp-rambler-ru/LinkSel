@@ -27,17 +27,9 @@
 
 iarduino_RTC watch(RTC_DS1302, PIN_RST, CLK, DAT);  // Объявляем объект watch для работы с RTC модулем на базе чипа DS1302
 
-// инициализируем контроллер Ethernet
+// инициализируем контроллер Ethernet, назначаем MAC адрес
 const byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-//  ?? временно прямое назначение , в рабочей создавать пустые и присвоение в setup
-/*
-  IPAddress ip(10, 140, 33, 147);// собственный алрес Ethernet интерфейса
-  IPAddress ip_dns(10, 140, 33, 1);
-  IPAddress gateway(10, 140, 33, 1);
-  IPAddress subnet(255, 255, 255, 0);
-  IPAddress pingAddr(10, 140, 33, 1); // 111); // ip address to ping  мой комп не хочет пинговаться - адрес 111 ??? почему, а шлюз пингует
-*/
 IPAddress TS(89,109,251,21);
 
 SOCKET pingSocket = 0;
@@ -183,10 +175,9 @@ _LOOK(config.field.password);
   digitalWrite(LED_AUTO, LED_OFF);
 
   // инициализируем контроллер Ethernet  
-  Ethernet.init(CS_W5500); // - ?? вроде не нужно
+  Ethernet.init(CS_W5500); 
   //Ethernet.begin(mac, ip, ip_dns, gateway, subnet);  //  такой вариант работал  
   Ethernet.begin(mac, config.field.IP, config.field.gatewayIP, config.field.gatewayIP, config.field.maskIP);  // считаем что localDNS совпадает с gatewayIP
-  // Ethernet.begin(mac, config.field.IP);  так работало до добавления gateway
   server.begin();
 
   Serial.print("IP: ");
@@ -203,15 +194,16 @@ _LOOK(config.field.password);
   timeClient.setPoolServerName( TS_IP.c_str() ); // устанавливаем адрес сервера времени
   timeClient.begin(); // config.field.portTimeServer ); ?? // активация клиента времени
 _PRN("time request")
-
-  D.calcDelayReturnA = config.field.delayReturnA;  // устанавливаем начальную задержку  
+  
   counters.load( Tping, config.field.timePing * 1000 );// настраиваем период повторения пинга (переводим в мс)
   counters.load( SyncTimeSrv, 3600 * 1000 );  // период обновления времени с тайм сервера - 1 час
   counters.load( LockSwitch, config.field.delayBackSwitch * 1000);
+  D.calcDelayReturnA = config.field.delayReturnA;  // устанавливаем начальную задержку 
   counters.load( returnA, D.calcDelayReturnA * 1000);
   counters.load( timeOutWeb, 1 * 1000);  // тайм аут обслуживания клиента 1 сек
   // не используется counters.load( oneHour, 3600 * 1000);  // таймер на 1 час
   counters.load( press3s, 3 * 1000);  // таймер на 3 сек - длительное нажатие на кнопку
+  counters.load( oneMin, 60 * 1000);  // для учета времени работы и др. служебных функций 
 
   counters.resetAll();  // первичный сброс всех счетчиков, рестарт произойдет в основном цикле после срабатывания условий
 
@@ -220,7 +212,6 @@ _PRN("time request")
   digitalWrite(LED_LAN_A, LED_ON);
   digitalWrite(LED_LAN_B, LED_OFF);
  
-  // ??  убрать после отладки ICMPPing::setTimeout(PING_REQUEST_TIMEOUT_MS);  // надо ставить таймаут из конфига.
   ICMPPing::setTimeout( config.field.timeoutPing ); 
   ping.asyncStart(config.field.pingIP, 1, echoResult); //послать первый запрос 
   //  замер количества свободной памяти
@@ -266,8 +257,6 @@ delay(200);
 };
 */
 
-//  ??  добавить стирание лог файла если он очень большой в класс LOG
-
  _PRN("end setup")
 
 }
@@ -282,7 +271,7 @@ void loop() {
   };
   vRAM = instantRAM;
 
-  unsigned long Tstart = millis();
+  uint32_t Tstart = millis();
   //  **********************************************  ЧТЕНИЕ СОСТОЯНИЯ ОБОРУДОВАНИЯ И КОНТРОЛЛЕРА   ************************************************************
   num_cycle++;
   D.Date_Time = watch.gettime("Y-m-d H:i:s");  // обновляем время
@@ -373,42 +362,42 @@ _LOOK(echoResult.status)
   if( echoResult.status != ASYNC_SENT ){  // отправка нового пинга, результаты прошлого запроса разобрали выше
     bool f = ping.asyncStart(config.field.pingIP, 1, echoResult); 
     _LOOK(f);
-   /*  анализ уже реализован по результату  SEND_TIMEOUT
-   // ping.asyncStart(addr, n, echoResult) - запускает новый запрос ping асинхронно. addr: IP-адрес для проверки в виде массива из четырех октетов. n: Количество повторений, прежде чем сдаваться. echoResult: ICMPEchoReply, который будет содержать статус == ASYNC_SENT при успешном выполнении.
-  // возвращает  true при удачной отправке асинхронного запроса, false в противном случае.
-   if ( !ping.asyncStart(config.field.pingIP, 1, echoResult)){  // если не удалось послать нормально запрос
-       Log.writeMsg( F(не удалось отправить пинг) ); // запись в лог о невозможности отправки сообщения      
-      };
-   */   
   };
 };//  если сработал счетчик Tping
-
-
-// ??если не было возврата на основной канал, то обрабатываем потерю ping, сбрасываем счетчик интервала ping и счетчик ожидания ответа
-// ?? если был возврат на основной канал и потерь больше допустимого, то возвращаемся на резервный канал 
 
 
 // ----------------  если автоматический режим -----------------
 if( D.autoSW){
 
   // ----------------- ПЕРЕКЛЮЧЕНИЕ НА ДРУГОЙ КАНАЛ, ЕСЛИ ПОТЕРИ PING БОЛЬШЕ ПОГРОГОВ   ---------------------  
-  if( (( D.lostPing >= config.field.maxLostPing ) || !pingResult.isOK( config.field.maxLosesFromSent, config.field.numPingSent) ) && counters.isOver( LockSwitch ) ){  // если потерь подряд или потерь из заданного количества больше порога и таймер запрета перехода на другой канал истек, то    
-      changePort( D ); 
-      if (D.port == 0) { Log.writeMsg( F("auto_toA") ); }  // канал А теперь
-      else{ Log.writeMsg( F("auto_toB") ); }  // канал B теперь
-      counters.start( LockSwitch );  // а если это пробное переключение? надо состояние переключения "из-за потерь" из-за возврата на приоритетный канал"  ??
-      if( (D.port == 1) && ( delayReturnA > 0 ) ){    // если переключились на B и  требуется запуск автовозврата, то вычисляем новую задержку (если необходимо) и запускаем счетчик возврата на канал А        
-          if( D.autoReturnA ){  //  если автовозврат с А  и на А были только потери ( не было сброса autoReturnA, и раз мы здесь, то есть много потерь пингов и истек LockSwitch и ни один успешный пинг не сбросил autoReturnA, то 
-              //рассчитываем новую задержку с увеличенным шагом, загружаем счетчик новым значением и запускаем счетчик
-              D.calcDelayReturnA += stepDelay;
-              if( D.calcDelayReturnA > config.field.maxDelayReturnA){  D.calcDelayReturnA = config.field.maxDelayReturnA;  };  // ограничиваем задержку максимальным  maxDelayReturnA            
-              counters.load( returnA, D.calcDelayReturnA * 1000);   // загружаем в счетчик          
-              D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
-          };           
-          counters.start( returnA );  // запустить таймер автовозврата на канал А ( если мы уже здесь, то автовозврат разрешен)
-      };   
-  };
+  if( ( D.lostPing >= config.field.maxLostPing ) || !pingResult.isOK( config.field.maxLosesFromSent, config.field.numPingSent) ){
 
+    // -----------  возврат на B после неудачного автовозврата на A ( не используем задержку LockSwitch )  -----------------
+    if( D.autoReturnA && (D.port == 0) && ( config.field.delayReturnA > 0 ) ){  
+        //  если был автовозврат на А  и на А были только потери ( не было сброса autoReturnA) и переключаемся с В на А и автовозврат не заблокирован delayReturnA==0
+        changePort( D ); // переход обратно на B  
+        //рассчитываем новую задержку с увеличенным шагом, загружаем счетчик новым значением и запускаем счетчик
+        D.calcDelayReturnA += stepDelay;
+        if( D.calcDelayReturnA > config.field.maxDelayReturnA){  D.calcDelayReturnA = config.field.maxDelayReturnA;  };  // ограничиваем задержку максимальным  maxDelayReturnA            
+        counters.load( returnA, D.calcDelayReturnA * 1000);   // загружаем в счетчик          
+        counters.start( returnA );  // запустить таймер автовозврата на канал А 
+        D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
+    }
+    else{ //  ------------------------    ОБЫЧНОЕ ПЕРЕКЛЮЧЕНИЕ ПО ПОТЕРЯМ PING   -------------------
+        if( counters.isOver( LockSwitch ) ){  // если потерь подряд или потерь из заданного количества больше порога и таймер запрета перехода на другой канал истек, то    
+            changePort( D ); 
+            counters.start( LockSwitch );  
+            if (D.port == 0) {  // канал А теперь
+                Log.writeMsg( F("auto_toA") ); 
+            } 
+            else{   // канал B теперь
+                counters.start( returnA );  // запустить таймер автовозврата на канал А
+                Log.writeMsg( F("auto_toB") ); 
+            };              
+        };
+    };
+  }; // ПЕРЕКЛЮЧЕНИЕ НА ДРУГОЙ КАНАЛ, ЕСЛИ ПОТЕРИ PING БОЛЬШЕ ПОГРОГОВ 
+    // прочая обработка в режиме Auto
     //  ------------------  AUTO RETURN TO A  -------------------------------
     if( (delayReturnA > 0) && ( D.port == 1 ) && counters.isOver( returnA ) ){ // автовозврат настроен и канал В и истекло время автовозврата, то возвращаемся на А
       changePort( D );     
@@ -416,8 +405,7 @@ if( D.autoSW){
       Log.writeMsg( F("ret_toA") ); 
       D.autoReturnA = true;  // флаг автовозврата на А
     };
-
-    //  ---------------------  сброс режима, если нет параметров для работы в режиме Auto    -------------------
+    //  ---------------------  СБРОС РЕЖИМА AUTO , если нет параметров для работы в режиме Auto    -------------------
     if( (( config.field.maxLosesFromSent == 0 ) || ( config.field.numPingSent == 0 )) && ( config.field.maxLostPing == 0 ) ){  // и нет параметров для автоматической работы
         // помигать светодиодом и отключить
         for( byte i = 0; i<3; i++){
@@ -429,7 +417,7 @@ if( D.autoSW){
         digitalWrite( LED_AUTO, LED_OFF);
         D.autoSW = false;
         Log.writeMsg( F("rst_auto") ); // запись о сбросе автоматического режима
-      };
+    };
 };//  если авто режим 
 
  // ========================    обработка запросов к вэб интерфейсу   ==========================
@@ -506,10 +494,11 @@ if( !buttonOn ){
           if( D.autoSW ){               
             if( (D.port == 1) && ( delayReturnA > 0 ) ){  //если канал B то запустить счетчик автовозврата
             D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
+            D.calcDelayReturnA = config.field.delayReturnA;  // задержка возврата на А устанавливается по конфигурации, без учета возможных приращений возникших из-за неисправности канала А
+            counters.load( returnA, D.calcDelayReturnA * 1000);
             counters.start( returnA );  // запустить таймер автовозврата на канал А ( если мы уже здесь, то автовозврат разрешен)
             };
             Log.writeMsg( F("set_auto") );  
-            // ??? надо ли здесь запускать еще какие то счетчики?
           }
           else{ Log.writeMsg( F("set_man") );  };
         }
@@ -531,15 +520,25 @@ if( buttonOn ){ //кнопка нажата
   };
 };
 // кнопка нажата и была нажата - ничего
-// вывод индикации в соотвтествии с сотоянием устройства
+// вывод индикации в соотвтествии с состоянием устройства
 if( D.autoSW ){ digitalWrite( LED_AUTO, LED_ON); }
 else{ digitalWrite( LED_AUTO, LED_OFF); };
 
-// автоматическое восстановление настроек каждый час исключено из программы
+//  учет времени работы и расчет статистики
+D.lostPerMin[D.port] = (60.0 * pingResult.numLost() ) / ( LEN_BUF_RES * config.field.timePing);  //  с переводом в потерянные за минуту
+if( counters.isOver( oneMin ) ){
+    counters.start( oneMin );
+    // учет статистики
+    D.workTime[D.port]++;
+    D.upTime = (D.workTime[0] + D.workTime[1]) / 60;    
+};
 
 counters.cycleAll();  // работа счетчиков  задержки
 
   //  ВРЕМЯ ИСПОЛНЕНИЯ ЦИКЛА  - измеренное время цикла  не более ?? мс
+  //  ?? временно
+  uint32_t Tcycle = millis() - Tstart;
+  _LOOK( Tcycle)
   // задержка для одинакового времени цикла
   // Из-за перехода времени через через 0 запись в лог будет даже без опоздания контроллера ( происходит один раз в 50 дней)
 if (millis() >= Tstart) {                               // если не было перехода через 0 в milis то

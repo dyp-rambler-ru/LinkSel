@@ -35,11 +35,11 @@ bool Tlog::writeMsg( String msgName){       // записать сообщени
   fName = "/" + fName +"/" + msgName + ".txt";     
   msgFile = SD.open(fName, FILE_READ);  
   if( !msgFile ){   
-    //  ??? добавить запись об исключении - не найден файл ИМЯ ФАЙЛА с информацией для лога  
+    msgFile.close();
+    write(F("The file with the message text for the LOG not found.")); //  запись об исключении - не найден файл с информацией для лога  
     return false;
   };    
   uint16_t sizeF= msgFile.size();  
-  // ?? добавить проверку, чтоб не пыталось выделить памяти больше чем есть свободной??
   String s;
   s.reserve(sizeF);
   char c;  
@@ -50,15 +50,6 @@ bool Tlog::writeMsg( String msgName){       // записать сообщени
   //  записать в лог с датой и временм  
   write(s); // пишем в лог
   return true; 
-}
-
-bool Tlog::beginRead(){ // начинаем чтение сообщений из лога
-  File logFile = SD.open(LOG_FILE, FILE_READ);
- // ????как читать произвольно
-}
-
-String Tlog::read(){  // читаем очередное сообщение  
-  //?? читать строку
 }
 
 static Tlog Log = Tlog();

@@ -524,7 +524,7 @@ void TWebServer::sendStdAnswer( uint16_t codeAnswer ){ //отправка ста
 void TWebServer::sendHeader( String msg ){ //отправка заголовка ответа сервера 
   _client.print(F("HTTP/1.1 ")); _client.println( msg ); // стартовая строка с кодом ошибки
   _client.println(F("Content-Type: text/html; charset=utf-8")); // тело передается в коде HTML, кодировка UTF-8
-  //  ??? нужно ли это и для каких страниц?   client.println("Refresh: 5"); // время обновления страницы !!!! работает и обновляет  
+  //  ?? нужно ли это и для каких страниц?   client.println("Refresh: 5"); // время обновления страницы !!!! работает и обновляет  
   sendNewSessionID(); // при необходимости посылаем куку ( один раз за сеанс)
   _client.println(F("Connection: close")); // закрыть сессию после ответа
   _client.println(); // пустая строка отделяет тело сообщения

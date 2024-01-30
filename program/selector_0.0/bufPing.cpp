@@ -36,3 +36,10 @@
       else{ return true; };
   }
 
+ uint16_t TpingResult::numLost(){  // подстчет количества потерянных пакетов во всем буфере
+      uint16_t lost = 0;
+      for(uint16_t i = 0; i < LEN_BUF_RES; i++){ 
+        if( !pings[i] ){ lost++; }
+      };
+      return lost;
+  }
