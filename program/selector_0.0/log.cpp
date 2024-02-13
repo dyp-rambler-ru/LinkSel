@@ -21,7 +21,7 @@ bool Tlog::write(String msg){  // записать в лог файл сообщ
   s = s + " ";
   s = s + msg;  
   _PRN("write to log ")
-  _LOOK( s )  
+  _SEE( s )  
   logFile.println( s );
   _MFREE
   logFile.close();

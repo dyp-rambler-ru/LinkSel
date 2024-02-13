@@ -110,7 +110,7 @@ void setup() {
   //SD.begin(CS_SD_CARD);
   //пробовать ини на разные пины
   bool openSD= SD.begin(CS_SD_CARD);
-  _LOOK(openSD);
+  _SEE(openSD);
 
   Log.writeMsg( F("start") );  //сообщение о старте контроллера
 
@@ -143,25 +143,25 @@ void setup() {
   config.field.password[0] = '1';    config.field.password[1] = 0;
    
 _PRN("after load");
-_LOOK_IP(config.field.IP); 
-_LOOK_IP(config.field.maskIP); 
-_LOOK_IP(config.field.pingIP); 
-_LOOK_IP(config.field.gatewayIP); 
-_LOOK(config.field.timePing);  
-_LOOK(config.field.timeoutPing);  
-_LOOK(config.field.maxLosesFromSent);    
-_LOOK(config.field.numPingSent);  
-_LOOK(config.field.maxLostPing);  
-_LOOK(config.field.delayBackSwitch);  
-_LOOK(config.field.delayReturnA);  
-_LOOK(config.field.stepDelay);  
-_LOOK(config.field.maxDelayReturnA);  
-_LOOK_IP(config.field.timeServerIP);  
-_LOOK(config.field.portTimeServer);      
-_LOOK(config.field.date);   
-_LOOK(config.field.time);   
-_LOOK(config.field.login);   
-_LOOK(config.field.password);   
+_SEE_IP(config.field.IP); 
+_SEE_IP(config.field.maskIP); 
+_SEE_IP(config.field.pingIP); 
+_SEE_IP(config.field.gatewayIP); 
+_SEE(config.field.timePing);  
+_SEE(config.field.timeoutPing);  
+_SEE(config.field.maxLosesFromSent);    
+_SEE(config.field.numPingSent);  
+_SEE(config.field.maxLostPing);  
+_SEE(config.field.delayBackSwitch);  
+_SEE(config.field.delayReturnA);  
+_SEE(config.field.stepDelay);  
+_SEE(config.field.maxDelayReturnA);  
+_SEE_IP(config.field.timeServerIP);  
+_SEE(config.field.portTimeServer);      
+_SEE(config.field.date);   
+_SEE(config.field.time);   
+_SEE(config.field.login);   
+_SEE(config.field.password);   
 
   // тестируем индикаторы включением на 1 секунду всего
   digitalWrite(LED_LAN_A, LED_ON);
@@ -217,11 +217,11 @@ _PRN("time request")
   //  замер количества свободной памяти
   vRAM = memoryFree(); // запоминаем количество с   вободного места в ОЗУ  
 
-  _LOOK(vRAM)
+  _SEE(vRAM)
 /*
 // =====================   временная проверка пинга  - работает на шлюз .... 1.1
 // время с сервера так же получает
-_LOOK_IP(config.field.pingIP);
+_SEE_IP(config.field.pingIP);
 while(true){
   _PRN("start ping")
 if (! ping.asyncStart(config.field.pingIP, 3, echoResult)){  // если не удалось послать нормально запрос
@@ -237,12 +237,12 @@ while( !ping.asyncComplete(echoResult)){  // если ждем ответа  и 
 
   // проверяем какой результат пинга
   if (echoResult.status != SUCCESS){  // нет ответа- тайм-аут
-    _LOOK(echoResult.status)  }
-    else {_LOOK(echoResult.status")};
+    _SEE(echoResult.status)  }
+    else {_SEE(echoResult.status")};
   
 delay(1000);
 bool timeRes=timeClient.forceUpdate();
- _LOOK( timeRes)
+ _SEE( timeRes)
  delay(3000);
   Serial.println(timeClient.getFormattedTime());
   delay(3000);
@@ -252,7 +252,7 @@ bool timeRes=timeClient.forceUpdate();
 //-------------  проверка кнопки  ----------------------------------------------
 /*
 while(true){
-_LOOK("button ON ?- ", !digitalRead( SW_SWITCH ))
+_SEE("button ON ?- ", !digitalRead( SW_SWITCH ))
 delay(200);
 };
 */
@@ -358,10 +358,10 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
     };
     // без default:{ };
   }; // switch
-_LOOK(echoResult.status)
+_SEE(echoResult.status)
   if( echoResult.status != ASYNC_SENT ){  // отправка нового пинга, результаты прошлого запроса разобрали выше
     bool f = ping.asyncStart(config.field.pingIP, 1, echoResult); 
-    _LOOK(f);
+    _SEE(f);
   };
 };//  если сработал счетчик Tping
 
@@ -423,7 +423,7 @@ if( D.autoSW){
  // ========================    обработка запросов к вэб интерфейсу   ==========================
 // вроде как для W5500 скорость передачи по spi 8МГц т.е. 1 МБ/сек. Т.к. данные надо считывать из microSD по  spi то получаем 500 кБ сек. 
 // за 1 такт в 200 мсек можно передать  порядка 100 кБ информации. Размеры страниц для вэб интерфейса не более 10 кБ. экономить и разделять передачу на такты нет смысла.
- //_LOOK("state in loop= ", _state)
+ //_SEE("state in loop= ", _state)
 if( webServer.isWait() ){  //если вэб сервер в ожидании 
     client = server.available(); // есть клиент?
     if( client ){ //если есть ожидающий клиент, то запустить вэб сервер и счетчик тайм аута
@@ -445,25 +445,25 @@ else if( webServer.isFinished() ){  // вэб сервер завершил об
 
 
 _PRN("after web ----------------------------------------------------------------------------------");
-_LOOK_IP(config.field.IP); 
-_LOOK_IP(config.field.maskIP); 
-_LOOK_IP(config.field.pingIP); 
-_LOOK_IP(config.field.gatewayIP); 
-_LOOK(config.field.timePing);  
-_LOOK(config.field.timeoutPing);  
-_LOOK(config.field.maxLosesFromSent);    
-_LOOK(config.field.numPingSent);  
-_LOOK(config.field.maxLostPing);  
-_LOOK(config.field.delayBackSwitch);  
-_LOOK(config.field.delayReturnA);  
-_LOOK(config.field.stepDelay);  
-_LOOK(config.field.maxDelayReturnA);  
-_LOOK_IP(config.field.timeServerIP);  
-_LOOK(config.field.portTimeServer);      
-_LOOK(config.field.date);   
-_LOOK(config.field.time);   
-_LOOK(config.field.login);   
-_LOOK(config.field.password);     
+_SEE_IP(config.field.IP); 
+_SEE_IP(config.field.maskIP); 
+_SEE_IP(config.field.pingIP); 
+_SEE_IP(config.field.gatewayIP); 
+_SEE(config.field.timePing);  
+_SEE(config.field.timeoutPing);  
+_SEE(config.field.maxLosesFromSent);    
+_SEE(config.field.numPingSent);  
+_SEE(config.field.maxLostPing);  
+_SEE(config.field.delayBackSwitch);  
+_SEE(config.field.delayReturnA);  
+_SEE(config.field.stepDelay);  
+_SEE(config.field.maxDelayReturnA);  
+_SEE_IP(config.field.timeServerIP);  
+_SEE(config.field.portTimeServer);      
+_SEE(config.field.date);   
+_SEE(config.field.time);   
+_SEE(config.field.login);   
+_SEE(config.field.password);     
 
 }
 else{   //иначе такт работы вэб сервера
@@ -505,8 +505,11 @@ if( !buttonOn ){
         else{  // таймер 3 сек не истек, значит короткое нажатие 
             // если режим авто, то отключаем авторежим
             if( D.autoSW ){ D.autoSW = false; }
-            else{  // если раежим ручного управления, то переключаем порт
-                changePort( D ); 
+            else{  // если режим ручного управления, то переключаем порт
+                D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
+                D.calcDelayReturnA = config.field.delayReturnA;  // задержка возврата на А устанавливается по конфигурации, без учета возможных приращений возникших из-за неисправности канала А
+                counters.load( returnA, D.calcDelayReturnA * 1000);
+                changePort( D );
                 if (D.port == 0) {  Log.writeMsg( F("man_to_A") ); }  // канал А теперь
                 else{  Log.writeMsg( F("man_to_B") );   }  // канал B теперь
             };            
@@ -538,7 +541,7 @@ counters.cycleAll();  // работа счетчиков  задержки
   //  ВРЕМЯ ИСПОЛНЕНИЯ ЦИКЛА  - измеренное время цикла  не более ?? мс
   //  ?? временно
   uint32_t Tcycle = millis() - Tstart;
-  _LOOK( Tcycle)
+  _SEE( Tcycle)
   // задержка для одинакового времени цикла
   // Из-за перехода времени через через 0 запись в лог будет даже без опоздания контроллера ( происходит один раз в 50 дней)
 if (millis() >= Tstart) {                               // если не было перехода через 0 в milis то

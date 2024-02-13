@@ -63,12 +63,12 @@ bool TWebServer::sendNewSessionID(){ // генерируем новый иден
       //	(сек, мин, час, день, мес, год, день_недели)
       uint32_t timeUnix = t.substring( t.lastIndexOf(":") + 1 ).toInt() + t.substring( t.indexOf(":") +1, t.lastIndexOf(":") ).toInt()*60 + t.substring( 0, t.indexOf(":")).toInt()*3600;
       timeUnix += d.substring( d.lastIndexOf("-") + 1 ).toInt() * 3600 * 24 + d.substring( d.indexOf("-") +1, d.lastIndexOf("-") ).toInt() * 3600 * 24 * 30 + d.substring( 0, d.indexOf("-")).toInt() * 3600 * 24 * 365;
-      _LOOK(timeUnix)
+      _SEE(timeUnix)
       uint32_t r = random(0x7FFFFFFF);
-      _LOOK(r)
+      _SEE(r)
       sessionID = (SESSION_ID_PASSWORD ^ timeUnix ^ r );
       needSendSessionID = false;
-      _LOOK(sessionID)
+      _SEE(sessionID)
       _client.println("Set-Cookie: LinkSel=" + String(sessionID) + String(F("; SameSite=Strict")) ); // дополнительно определяем SameSite=Strict чтоб не передавать с других страниц, типа безопасность
       return true;
   }else{  return false; };
@@ -89,8 +89,8 @@ _PRN(" web run ")
       {
         _PRN(" run - RecivingRequest ")
         if( readReq() ){  // если дочитали запрос, то меняем состояние
-            _LOOK(_req.length())
-            _LOOK(_content_Length)
+            _SEE(_req.length())
+            _SEE(_content_Length)
             // проверяем на ошибки в запросе        
             if( _counterL > MAX_LEN_REQ ){  // слишком длинный запрос  413; 
               sendStdAnswer( 413 );
@@ -114,7 +114,7 @@ _PRN(" web run ")
             // ?? а если запрос POST и тело пустое, то надо сообщение 400 Bad Request  ?? пока не реализованно
             // если дошли сюда, то все ОК и переходим к следующему состоянию
               _state = ParsingParam;
-              _LOOK(_state)
+              _SEE(_state)
         };  // иначе на следующем такте продолжим чтение        
         break;        
       };
@@ -169,7 +169,7 @@ bool TWebServer::readReq() {  // чтение запроса от клиента
   while (_client.available()) {  // пока есть данные в буфере от клиента?
     char ch = _client.read();
     { _req = _req + String(ch);  };  // для сброса вспомогательных строк из памяти
-    //{ _LOOK("len _req", _req.length() )  };
+    //{ _SEE("len _req", _req.length() )  };
     _counterL++;    
     if (_counterL > MAX_LEN_REQ) {
       //аварийное завершение, слишком длинный запрос, не хватает памяти, обработка ошибки в вызывающей процедуре по  _counterL > MAX_LEN_REQ
@@ -177,8 +177,8 @@ bool TWebServer::readReq() {  // чтение запроса от клиента
       return true;           
     }
   };
-_LOOK(_req)
-_LOOK(_counterL)
+_SEE(_req)
+_SEE(_counterL)
   if (_stateReadReq == Header) {
     // если нашлось CR+LF+CR+LF, то заголовок окончился. ищем тип, длину  и переходим к приему тела при необходимости
     if (_req.indexOf("\r\n\r\n") != -1) {      
@@ -197,8 +197,8 @@ _LOOK(_counterL)
       _webRes =  _req.substring( st_webRes, end_webRes ) ;  // запрошенный ресурс между заголовком запроса ( GET, POST) и до первого с конца пробела в первой строке запроса
       _webRes.trim();
       
-      _LOOK( _typeReq)
-      _LOOK( _webRes)            
+      _SEE( _typeReq)
+      _SEE( _webRes)            
       // продолжаем обработку заголовка запроса = найти длину от Content-Length: до CR+LF
       bool res;
       if (_req.indexOf("Content-Length:") != -1) {
@@ -207,7 +207,7 @@ _LOOK(_counterL)
         String s = _req.substring(st_char, end_char);
         s.trim();
         _content_Length = s.toInt(); 
-        _LOOK( _content_Length)
+        _SEE( _content_Length)
        res = false;
       } else {  // нет контента в запросе, значит запрос прочитан целиком
         _content_Length = -1;
@@ -216,7 +216,7 @@ _LOOK(_counterL)
       // продолжаем обработку заголовка запроса - найти куку от Cookie: LinkSel= до CR+LF
       if (_req.indexOf("Cookie: LinkSel=") != -1) {
         _PRN(F("#### recived Cookie"))
-        _LOOK(_req)
+        _SEE(_req)
         int st_char = _req.indexOf("Cookie: LinkSel=") + 16;
         int end_char = _req.indexOf("\r\n", st_char);
         String s = _req.substring(st_char, end_char);
@@ -241,7 +241,7 @@ _LOOK(_counterL)
 
 bool TWebServer::setParam(String& s) {  // извлекаем параметры и значения из строки и записываем в глобальный setup
   bool res = true;
-  _LOOK(s)
+  _SEE(s)
   if( s.length() == 0 ){ return true; }; // если строка пустая- выходим 
   String val;
   int st=0;  // нач позиция подстроки с параметрами для POST body  
@@ -261,14 +261,14 @@ bool TWebServer::setParam(String& s) {  // извлекаем параметры
       } else {
         val = s.substring(n + 1);
       };
-      _LOOK(name)
-      _LOOK(val)
+      _SEE(name)
+      _SEE(val)
       // костыль, в web двоеточие идет как %3A заменяем в val на : чтоб дальше все нормально работало
       val.replace("%3A",":");
-      _LOOK(name)
-      _LOOK(val)
+      _SEE(name)
+      _SEE(val)
       res = res && webConfig.setField(name, val);     
-      _LOOK(res)
+      _SEE(res)
       if (sep != -1) { st = sep + 1; }  // переходим к следующему параметру по разделителю &
       else {  st = -1;   };
   } while ( st > 0 );  // пока не дошли до конца строки  
@@ -338,7 +338,7 @@ bool TWebServer::sendHTML_File(String s){  // отправка HTML файла, 
   bool res = true;
  if( (s == "") || (s == "/") ){  s = "/index.htm";    };   //  если пусто то главная страница
       s = _rootWeb + s;
-      _LOOK(s)
+      _SEE(s)
       //ищем файл - ресурс 
       File f = SD.open(s, FILE_READ);  // открываем файл
       if ( !f ){  //     if( !SD.exists( s ) ){  //если файл не найден, то отправляем 
@@ -411,7 +411,7 @@ bool TWebServer::sendHTML_File(String s){  // отправка HTML файла, 
 void TWebServer::sendHTTP() {  // отправка ответа от HTTP сервера (работает после полученного запроса _typeReq != None )
 // параметры запроса должны быть уже разобраны и сохранены в parsingParam();
   String s=""; 
-  _LOOK(_typeReq)
+  _SEE(_typeReq)
   if( !needSendSessionID && ((sessionID == 0) || (receivedID == 0) || (sessionID != receivedID)) ){  // если кука нет или не совпадает значение , то выдать окно запроса пароля
       sendHTML_File(F("/access.htm"));
       return;
@@ -424,7 +424,7 @@ void TWebServer::sendHTTP() {  // отправка ответа от HTTP сер
       if (_webRes.indexOf("?") != -1) {   s = _webRes.substring(0,_webRes.indexOf("?")); } // ресурс
       else{ s = _webRes; }; // иначе вся строка - адрес ресурса
       s.trim();
-      _LOOK(s)
+      _SEE(s)
       if( s.indexOf( POSTFIX_CMD ) > 0 ) { // если это запрос на выполнение команды на сервере
           if( cmd.execute( s ) ){  // то вызвать команду , выполнить и вернуть страницу выполнения ( успех или отказ)
               s = "/success.htm";  // подставляем, чтоб отдать страницу об успешном исполнении
@@ -432,7 +432,7 @@ void TWebServer::sendHTTP() {  // отправка ответа от HTTP сер
               s = "/error.htm";  // подставляем, чтоб отдать страницу об ошибки
           };    
       };  // если это запрос на выполнение команды на сервере
-      _LOOK(s)
+      _SEE(s)
       sendHTML_File( s );  // отправляем файл s
       // если запланирован reset
       if( D.scheduledReset ){ resetMCU(); };
@@ -471,8 +471,8 @@ bool TWebServer::tagProcessing(String& tag ){ // если тэг типа input 
         String name = tag.substring( st+6, fin ); 
         String val;
         val = webConfig.getField( name ); 
-        _LOOK(name)
-        _LOOK(val)       
+        _SEE(name)
+        _SEE(val)       
         // старое if( val == NOT_CONFIG_VARIABLE ){ return false; };  // если параметр не нашли в конфиге то выбрасываемся и выше обрабатываем ошибку
         if( val == NOT_CONFIG_VARIABLE ){ 
               val = D.getParam( name ); 
@@ -483,7 +483,7 @@ bool TWebServer::tagProcessing(String& tag ){ // если тэг типа input 
         if( (st != -1) && (fin != -1) && ( st < fin) ){ //  если нашли value в тэге
             // к началу строки с value=" добавляем значение и закрывающую часть            
             tag = tag.substring( 0, st+7 ) + val + tag.substring( fin ); 
-            _LOOK(tag)
+            _SEE(tag)
         }
         else{  return false;  };       
       }      
@@ -497,7 +497,7 @@ void TWebServer::sendStdAnswer( uint16_t codeAnswer ){ //отправка ста
 //  это обрабатывается отдельно !!! case 200:{ _client.print(VER_HTTP); _client.println(F("200 OK")); break; };
   //  это обрабатывается отдельно !!!  case 201:{ _client.print(VER_HTTP); _client.println(F("201 Created")); break; };
   String msg = "";
-  _LOOK(codeAnswer)
+  _SEE(codeAnswer)
   switch(codeAnswer){
 // сообщения в ответах сервера  
   case 400:{ msg = F("400 Bad Request"); break; };

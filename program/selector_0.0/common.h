@@ -5,8 +5,8 @@
 
 #define NOT_STATE_VARIABLE "unknow PARAM"  // признак того, что не нашли переменную в setup
 
-#define LED_ON LOW
-#define LED_OFF HIGH
+#define LED_ON HIGH
+#define LED_OFF LOW
 // константы отключения/ включения реле (переключения на сеть 1 и сеть2
 #define LAN_A_ON HIGH
 #define LAN_B_ON LOW
@@ -54,7 +54,7 @@ class TState {
   public:
   TState();
   byte port = 0;                  // номер рабочего порта 0- А, 1 - В 
-  bool autoSW = false;            // признак работы в автоматическом режиме
+  bool autoSW = true;            // признак работы в автоматическом режиме, стартуем в режиме Авто
   byte lostPing = 0;                  // количество непрерывно потеряных пакетов на текущем канала 
   uint32_t calcDelayReturnA; // текущая задержка возврата на канал A
   // статистика

@@ -236,7 +236,7 @@ void TSetup::save( String fileName ){ // запись установок в фа
       String param = String((const __FlashStringHelper*) (const char*)pgm_read_word(names + i));  // записали имя  == танцы с бубном
       String val = getField( param );
       _PRN("write cfg file")
-      _LOOK(param + " = " + val)
+      _SEE(param + " = " + val)
       f.println( param + " = " + val );
   };
   f.close();

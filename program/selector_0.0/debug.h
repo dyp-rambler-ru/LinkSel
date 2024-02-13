@@ -6,11 +6,11 @@
 // останов программы бесконечным циклом
 #define _HALT while( true ){ delay(100);};
 // печать парамера
-#define _LOOK(x) Serial.print( __func__ ); Serial.print("(");  Serial.print( __LINE__ );  Serial.print(") ");  Serial.print(#x); Serial.print("="); Serial.println( (x) );
+#define _SEE(x) Serial.print( __func__ ); Serial.print("(");  Serial.print( __LINE__ );  Serial.print(") ");  Serial.print(#x); Serial.print("="); Serial.println( (x) );
         
 #define _PRN(x) Serial.print( __func__ ); Serial.print("(");  Serial.print( __LINE__ );  Serial.print(") ");  Serial.println( (x) );
 
-#define _LOOK_IP(x) Serial.print( __func__ ); Serial.print("(");  Serial.print( __LINE__ );  Serial.print(") ");  Serial.print(#x);  Serial.print("="); Serial.print( (x[0]) ); Serial.print("."); Serial.print( (x[1]) ); Serial.print("."); Serial.print( (x[2]) ); Serial.print("."); Serial.println( (x[3]) ); 
+#define _SEE_IP(x) Serial.print( __func__ ); Serial.print("(");  Serial.print( __LINE__ );  Serial.print(") ");  Serial.print(#x);  Serial.print("="); Serial.print( (x[0]) ); Serial.print("."); Serial.print( (x[1]) ); Serial.print("."); Serial.print( (x[2]) ); Serial.print("."); Serial.println( (x[3]) ); 
 
 #define _MFREE Serial.print( __func__ ); Serial.print("(");  Serial.print( __LINE__ );  Serial.print(") ");  Serial.print(" Memory FREE= "); Serial.println(memoryFree() );
 

@@ -90,7 +90,7 @@ TState::TState(){
 
 String TState::getParam( String name ){ // выдает параметр из TState по его символьному имени ( например для вставки в вэб страицу). Параметр выдается в виде текстовой строки если параметр не найден то выдает NOT_STATE_VARIABLE
 _PRN("-------------------------------    get PARAM  -----------------------------------")
-_LOOK(name)
+_SEE(name)
   char* c_name = name.c_str();
   // индусский код детектед  
   if( strcmp_P( c_name, pgm_port) == 0 ){  
