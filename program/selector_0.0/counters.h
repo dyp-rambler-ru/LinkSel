@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-#define T_DELAY  200  // время основного цикла микроконтроллера в мс, должно быть менее секунды, но более 50 мс 
+#define T_DELAY  200  // время основного цикла микроконтроллера в мс, должно быть менее секунды, но более 50 мс ( пустой цикл до 23 мс, при посылке ping 40 мс)
 #define CountersN 8   // количество разных видов счетчиков 
  
 enum  TNameCounters { Any = 0,  Tping = 1,   LockSwitch = 2, returnA = 3,  press3s = 4, oneMin = 5, timeOutWeb = 6, SyncTimeSrv = 7   };     // названия счетчиков, CountX - неиспользуемый счетчик

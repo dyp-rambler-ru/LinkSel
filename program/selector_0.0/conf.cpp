@@ -11,26 +11,26 @@ String TSetup::getField( String name ){     // выдает параметр и�
 //Параметр выдается в виде текстовой строки если параметр не найден то выдает то что определено в NOT_CONFIG_VARIABLE
   char* c_name = name.c_str();
   // индусский код детектед  
-  if( strcmp_P( c_name, login) == 0 ){  return String(field.login);   };
-  if( strcmp_P( c_name, password) == 0 ){  return String(field.password);   };
-  if( strcmp_P( c_name, IP) == 0 ){  return String(field.IP[0]) + "." + String(field.IP[1]) + "." + String(field.IP[2]) + "." + String(field.IP[3]); };
-  if( strcmp_P( c_name, maskIP) == 0 ){ return String(field.maskIP[0]) + "." + String(field.maskIP[1]) + "." + String(field.maskIP[2]) + "." + String(field.maskIP[3]);};
-  if( strcmp_P( c_name, gatewayIP) == 0 ){ return String(field.gatewayIP[0]) + "." + String(field.gatewayIP[1]) + "." + String(field.gatewayIP[2]) + "." + String(field.gatewayIP[3]);};
-  if( strcmp_P( c_name, pingIP) == 0 ){ return String(field.pingIP[0]) + "." + String(field.pingIP[1]) + "." + String(field.pingIP[2]) + "." + String(field.pingIP[3]); };  
-  if (strcmp_P( c_name, timePing) == 0) { return String( field.timePing ); };
-  if( strcmp_P( c_name, timeoutPing) == 0 ){ return String( field.timeoutPing ); };
-  if( strcmp_P( c_name, maxLosesFromSent) == 0 ){ return String( field.maxLosesFromSent ); };
-  if( strcmp_P( c_name, numPingSent) == 0 ){ return String( field.numPingSent ); };  
-  if( strcmp_P( c_name, maxLostPing) == 0 ){ return String( field.maxLostPing ); };   
-  if( strcmp_P( c_name, delayBackSwitch) == 0 ){ return String( field.delayBackSwitch ); };
-  if( strcmp_P( c_name, delayReturnA) == 0 ){ return String( field.delayReturnA ); };  
-  if( strcmp_P( c_name, stepDelay) == 0 ){ return String( field.stepDelay ); };    
-  if( strcmp_P( c_name, maxDelayReturnA) == 0 ){ return String( field.maxDelayReturnA ); };
-  if( strcmp_P( c_name, timeServerIP) == 0 ){ return String(field.timeServerIP[0]) + "." + String(field.timeServerIP[1]) + "." + String(field.timeServerIP[2]) + "." + String(field.timeServerIP[3]);  };  
-  if( strcmp_P( c_name, portTimeServer) == 0 ){ return String( field.portTimeServer ); }; 
+  if( strcmp_P( c_name, name_login) == 0 ){  return String(field.login);   };
+  if( strcmp_P( c_name, name_password) == 0 ){  return String(field.password);   };
+  if( strcmp_P( c_name, name_IP) == 0 ){  return String(field.IP[0]) + "." + String(field.IP[1]) + "." + String(field.IP[2]) + "." + String(field.IP[3]); };
+  if( strcmp_P( c_name, name_maskIP) == 0 ){ return String(field.maskIP[0]) + "." + String(field.maskIP[1]) + "." + String(field.maskIP[2]) + "." + String(field.maskIP[3]);};
+  if( strcmp_P( c_name, name_gatewayIP) == 0 ){ return String(field.gatewayIP[0]) + "." + String(field.gatewayIP[1]) + "." + String(field.gatewayIP[2]) + "." + String(field.gatewayIP[3]);};
+  if( strcmp_P( c_name, name_pingIP) == 0 ){ return String(field.pingIP[0]) + "." + String(field.pingIP[1]) + "." + String(field.pingIP[2]) + "." + String(field.pingIP[3]); };  
+  if (strcmp_P( c_name, name_timePing) == 0) { return String( field.timePing ); };
+  if( strcmp_P( c_name, name_timeoutPing) == 0 ){ return String( field.timeoutPing ); };
+  if( strcmp_P( c_name, name_maxLosesFromSent) == 0 ){ return String( field.maxLosesFromSent ); };
+  if( strcmp_P( c_name, name_numPingSent) == 0 ){ return String( field.numPingSent ); };  
+  if( strcmp_P( c_name, name_maxLostPing) == 0 ){ return String( field.maxLostPing ); };   
+  if( strcmp_P( c_name, name_delayBackSwitch) == 0 ){ return String( field.delayBackSwitch ); };
+  if( strcmp_P( c_name, name_delayReturnA) == 0 ){ return String( field.delayReturnA ); };  
+  if( strcmp_P( c_name, name_stepDelay) == 0 ){ return String( field.stepDelay ); };    
+  if( strcmp_P( c_name, name_maxDelayReturnA) == 0 ){ return String( field.maxDelayReturnA ); };
+  if( strcmp_P( c_name, name_timeServerIP) == 0 ){ return String(field.timeServerIP[0]) + "." + String(field.timeServerIP[1]) + "." + String(field.timeServerIP[2]) + "." + String(field.timeServerIP[3]);  };  
+  if( strcmp_P( c_name, name_portTimeServer) == 0 ){ return String( field.portTimeServer ); }; 
   
-  if( strcmp_P( c_name, time) == 0 ){ return String(field.time); }; 
-  if( strcmp_P( c_name, date) == 0 ){ return String(field.date); };  
+  if( strcmp_P( c_name, name_time) == 0 ){ return String(field.time); }; 
+  if( strcmp_P( c_name, name_date) == 0 ){ return String(field.date); };  
   //а если не нашли имени
   return NOT_CONFIG_VARIABLE;
 }
@@ -97,52 +97,52 @@ bool TSetup::setField( String name, String val ){ // устанавливает 
   char* c_name = name.c_str();
   int st, fin;
   // индусский код детектед  
-  if( strcmp_P( c_name, login) == 0 ){ val.toCharArray(field.login, 9); return true; };
-  if( strcmp_P( c_name, password) == 0 ){ val.toCharArray(field.password, 9); return true; };
-  if( strcmp_P( c_name, IP) == 0 ){    
+  if( strcmp_P( c_name, name_login) == 0 ){ val.toCharArray(field.login, 9); return true; };
+  if( strcmp_P( c_name, name_password) == 0 ){ val.toCharArray(field.password, 9); return true; };
+  if( strcmp_P( c_name, name_IP) == 0 ){    
     st = 0;
     for( byte i = 0; i < 3; i++){ fin = val.indexOf('.', st);  field.IP[i] = val.substring( st, fin ).toInt(); st = fin + 1;  };  
     field.IP[3] = val.substring(st).toInt();  // дописываем последний 
     return true;
   };  
-  if( strcmp_P( c_name, maskIP) == 0 ){ 
+  if( strcmp_P( c_name, name_maskIP) == 0 ){ 
     st = 0;
     for( byte i = 0; i < 3; i++){ fin = val.indexOf('.', st);   field.maskIP[i] = val.substring( st, fin ).toInt(); st = fin + 1;  };  
     field.maskIP[3] = val.substring(st).toInt();  // дописываем последний 
     return true;
   };
-  if( strcmp_P( c_name, gatewayIP) == 0 ){ 
+  if( strcmp_P( c_name, name_gatewayIP) == 0 ){ 
     st = 0;
     for( byte i = 0; i < 3; i++){ fin = val.indexOf('.', st);   field.gatewayIP[i] = val.substring( st, fin ).toInt(); st = fin + 1;  };  
     field.gatewayIP[3] = val.substring(st).toInt();  // дописываем последний 
     return true;
   };
-  if( strcmp_P( c_name, pingIP) == 0 ){ 
+  if( strcmp_P( c_name, name_pingIP) == 0 ){ 
     st = 0;
     for( byte i = 0; i < 3; i++){ fin = val.indexOf('.', st);   field.pingIP[i] = val.substring( st, fin ).toInt(); st = fin + 1;  };  
     field.pingIP[3] = val.substring(st).toInt();  // дописываем последний 
     return true;
   };  
-  if( strcmp_P( c_name, timePing) == 0 ){   field.timePing = val.toInt();    return true; };
-  if( strcmp_P( c_name, timeoutPing) == 0 ){   field.timeoutPing = val.toInt();   return true; }; 
-  if( strcmp_P( c_name, maxLosesFromSent) == 0 ){ field.maxLosesFromSent = val.toInt();   return true; };
-  if( strcmp_P( c_name, numPingSent) == 0 ){ field.numPingSent = val.toInt();   return true; };  
-  if( strcmp_P( c_name, maxLostPing) == 0 ){ field.maxLostPing = val.toInt();   return true; };  
-  if( strcmp_P( c_name, delayBackSwitch) == 0 ){ field.delayBackSwitch = val.toInt();   return true; };
-  if( strcmp_P( c_name, delayReturnA) == 0 ){ field.delayReturnA = val.toInt();   return true; };
-  if( strcmp_P( c_name, stepDelay) == 0 ){ field.stepDelay  = val.toInt();   return true; };
-  if( strcmp_P( c_name, maxDelayReturnA) == 0 ){ field.maxDelayReturnA = val.toInt();   return true; };
+  if( strcmp_P( c_name, name_timePing) == 0 ){   field.timePing = val.toInt();    return true; };
+  if( strcmp_P( c_name, name_timeoutPing) == 0 ){   field.timeoutPing = val.toInt();   return true; }; 
+  if( strcmp_P( c_name, name_maxLosesFromSent) == 0 ){ field.maxLosesFromSent = val.toInt();   return true; };
+  if( strcmp_P( c_name, name_numPingSent) == 0 ){ field.numPingSent = val.toInt();   return true; };  
+  if( strcmp_P( c_name, name_maxLostPing) == 0 ){ field.maxLostPing = val.toInt();   return true; };  
+  if( strcmp_P( c_name, name_delayBackSwitch) == 0 ){ field.delayBackSwitch = val.toInt();   return true; };
+  if( strcmp_P( c_name, name_delayReturnA) == 0 ){ field.delayReturnA = val.toInt();   return true; };
+  if( strcmp_P( c_name, name_stepDelay) == 0 ){ field.stepDelay  = val.toInt();   return true; };
+  if( strcmp_P( c_name, name_maxDelayReturnA) == 0 ){ field.maxDelayReturnA = val.toInt();   return true; };
   
-  if( strcmp_P( c_name, timeServerIP) == 0 ){ 
+  if( strcmp_P( c_name, name_timeServerIP) == 0 ){ 
     st = 0;
     for( byte i = 0; i < 3; i++){ fin = val.indexOf('.', st);   field.timeServerIP[i] = val.substring( st, fin ).toInt(); st = fin + 1;  };  
     field.timeServerIP[3] = val.substring(st).toInt();  // дописываем последний     
     return true;
   };  
-  if( strcmp_P( c_name, portTimeServer) == 0 ){  field.portTimeServer = val.toInt();   return true; };
+  if( strcmp_P( c_name, name_portTimeServer) == 0 ){  field.portTimeServer = val.toInt();   return true; };
  
-  if( strcmp_P( c_name, time) == 0 ){  val.toCharArray(field.time, 9);   return true; };
-  if( strcmp_P( c_name, date) == 0 ){  val.toCharArray(field.date, 11);   return true; };
+  if( strcmp_P( c_name, name_time) == 0 ){  val.toCharArray(field.time, 9);   return true; };
+  if( strcmp_P( c_name, name_date) == 0 ){  val.toCharArray(field.date, 11);   return true; };
   
   return false; // если дошли сюда, значит не нашли параметра
   
@@ -156,13 +156,13 @@ void TSetup::setDefaultField(){   // сбросить установки в зн
     field.pingIP[0] = 10;   field.pingIP[1] = 140;  field.pingIP[2] = 33;  field.pingIP[3] = 1;  //  пингуемый адрес        
     field.timePing = 10;  // период повтора ping
     field.timeoutPing = 800;  // тайма-аут пинга в мсек    
-    field.maxLosesFromSent = 15; // порог потерь пингов из общего количества посланных numPingSent для переключения на другой канал
-    field.numPingSent = 10;      // количество посылаемых пингов для вычисления критерия переключения на другой канал    
-    field.maxLostPing = 5;  // предельное число подряд (непрерывно) потеряных пакетов
-    field.delayBackSwitch = 20;  // задержка переключения обратно в сек, если новый канал тоже не рабочий, необходимо, чтоб в случае отказа обоих каналов не было непрерывного переключения туда-сюда
-    field.delayReturnA = 30;   // время до попытки автоматического возврата на порт А  в сек      по умолчанию 1 час
-    field.stepDelay = 10;      // шаг приращения задержки до автоматического возврата на порт А , если предыдущая попытка возврата быле НЕ успешной
-    field.maxDelayReturnA = 120;  // максимально возможное время до попытки автоматического возврата на порт А  в сек ( с учетом циклического увеличения на stepDelay), по умолчанию 1 сутки
+    field.maxLosesFromSent = 6; // порог потерь пингов из общего количества посланных numPingSent для переключения на другой канал
+    field.numPingSent = 20;      // количество посылаемых пингов для вычисления критерия переключения на другой канал    
+    field.maxLostPing = 3;  // предельное число подряд (непрерывно) потеряных пакетов
+    field.delayBackSwitch = 60;  // задержка переключения обратно в сек, если новый канал тоже не рабочий, необходимо, чтоб в случае отказа обоих каналов не было непрерывного переключения туда-сюда
+    field.delayReturnA = 300;   // время до попытки автоматического возврата на порт А  в сек      по умолчанию 1 час
+    field.stepDelay = 120;      // шаг приращения задержки до автоматического возврата на порт А , если предыдущая попытка возврата быле НЕ успешной
+    field.maxDelayReturnA = 1800;  // максимально возможное время до попытки автоматического возврата на порт А  в сек ( с учетом циклического увеличения на stepDelay), по умолчанию 1 сутки
     field.timeServerIP[0] = 89;  field.timeServerIP[1] = 109;  field.timeServerIP[2] = 251;   field.timeServerIP[3] = 21;  
     field.portTimeServer = 123;  
 

@@ -57,6 +57,7 @@ int  instantRAM;
 uint32_t num_cycle;
 bool largeT; // флаг превышения времени выполнения основного цикла
 uint16_t errorTimeSrv; // счетчик ошибок обращения к тайм серверу
+uint8_t numPingAfterAReturnA = 0; // вспомогательная переменная, хранит количество посланных пингов после автовозврата на А, для проверки , что канал А действительно рабочий и автовозврат прошел успешно
 
 File root;  // файловая переменная для корневой директории
 
@@ -137,7 +138,7 @@ void setup() {
     _PRN("set Def ")
   };
 
-// ???  временно для отладки
+// ???  временно для отладки  ?????
   config.resetLoginPassword();
   config.field.login[0] = 'q';  config.field.login[1] = 0;
   config.field.password[0] = '1';    config.field.password[1] = 0;
@@ -302,8 +303,8 @@ void loop() {
 //  ------------------------ PING -----------------------------
 // если истек период проверки результата и посылки следующего пинга то
 if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){   
-  counters.start( Tping ); // перезапуск таймера
-// обработка пинга - разобрать какое состояние сейчас после предыдущей отправки
+    counters.start( Tping ); // перезапуск таймера
+    // обработка пинга - разобрать какое состояние сейчас после предыдущей отправки
   switch( echoResult.status ){  // если ASYNC_SENT то запрос послан, ожидаем ответ - ничего не делать      
     case SUCCESS: { //если успех
       //проверяем адрес ответившего хоста
@@ -312,12 +313,7 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
       if( eqAddrIP ){  // адрес ответа совпадаетс адресом посылки
           pingResult.set( true );
           digitalWrite(LED_PING, LED_ON);  //  включаем индикатор успешного пинга
-          D.lostPing = 0; // сбрасываем счетчик непрпрывно потеряных пакетов          
-          if( D.port == 0 ){ //если канал А , то действия связанные с автовозвратом  т.к. был хороший пинг и канал А был исправен
-            D.autoReturnA = false;   // был "хороший" пинг, значит автовозврат успешный и увеличивать задержку не надо
-            D.calcDelayReturnA = config.field.delayReturnA;
-            counters.load( returnA, D.calcDelayReturnA * 1000);   // загружаем в счетчик
-          };
+          D.lostPing = 0; // сбрасываем счетчик непрпрывно потеряных пакетов   
           _PRN(" SUCCESS ");
           if( !pingResult.get( 1 ) ){ Log.writeMsg( F("ping_ok") );  }// если прошлый пинг (1 - т.к. уже сохранили текущий результат в 0) был потерян то сообщение в лог восствновлении связи     
       }
@@ -334,6 +330,8 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
     case SEND_TIMEOUT:{  // Время ожидания отправки запроса истекло не могу отправить запрос . вероятно нет линка
       pingResult.set( false );
       digitalWrite(LED_PING, LED_OFF);  //  выключаем индикатор успешного пинга
+      D.lostPing++;
+      D.totalLost[D.port]++;    
       _PRN(" send timeout ");
       if( pingResult.get( 1 ) ){ Log.writeMsg( F("fld_ping") ); }; // если прошлый пинг (1 - т.к. уже сохранили текущий результат в 0) был нормальный то сообщение в лог о проблемах      
       break;
@@ -359,6 +357,20 @@ if( counters.isOver( Tping ) && ping.asyncComplete(echoResult) ){
     // без default:{ };
   }; // switch
 _SEE(echoResult.status)
+
+  // если канал А и это автовозврат
+  if( (D.port == 0) && D.autoReturnA ){
+     _SEE(numPingAfterAReturnA)
+      numPingAfterAReturnA++;
+      if( ( numPingAfterAReturnA > 1 ) && pingResult.get(0) ){ //если канал А и 2-й пинга после автовозврата (а фактически- первый пинг на канале А) и последний пинг  хорошой,то канал А исправен и надо сбросить увеличенную задержку (ждем 2 пинга, т.к. после переключения пинга текущий результат будет от пинга на прежний канал)
+          // был "хороший" пинг, значит автовозврат успешный и увеличенная задержка не нужна
+          D.autoReturnA = false;             
+          D.calcDelayReturnA = config.field.delayReturnA;
+          _SEE(D.calcDelayReturnA)
+          counters.load( returnA, D.calcDelayReturnA * 1000);   // загружаем в счетчик
+      };
+  };
+
   if( echoResult.status != ASYNC_SENT ){  // отправка нового пинга, результаты прошлого запроса разобрали выше
     bool f = ping.asyncStart(config.field.pingIP, 1, echoResult); 
     _SEE(f);
@@ -373,20 +385,32 @@ if( D.autoSW){
   if( ( D.lostPing >= config.field.maxLostPing ) || !pingResult.isOK( config.field.maxLosesFromSent, config.field.numPingSent) ){
 
     // -----------  возврат на B после неудачного автовозврата на A ( не используем задержку LockSwitch )  -----------------
-    if( D.autoReturnA && (D.port == 0) && ( config.field.delayReturnA > 0 ) ){  
+    if( D.autoReturnA && (D.port == 0) && ( config.field.delayReturnA > 0 ) ){ 
         //  если был автовозврат на А  и на А были только потери ( не было сброса autoReturnA) и переключаемся с В на А и автовозврат не заблокирован delayReturnA==0
+        _PRN("port 1 bad autoreturn")
         changePort( D ); // переход обратно на B  
+        pingResult.clear(); // очищаем, чтоб не влияли потери на предыдущем порту и не вызывали переключения обратно по среднему значению потерь
         //рассчитываем новую задержку с увеличенным шагом, загружаем счетчик новым значением и запускаем счетчик
-        D.calcDelayReturnA += stepDelay;
+        _PRN("pred")
+        _SEE(D.calcDelayReturnA)        
+        D.calcDelayReturnA += config.field.stepDelay;  
+        _PRN("+ step")
+        _SEE(D.calcDelayReturnA)
         if( D.calcDelayReturnA > config.field.maxDelayReturnA){  D.calcDelayReturnA = config.field.maxDelayReturnA;  };  // ограничиваем задержку максимальным  maxDelayReturnA            
+        _PRN("next")        
+        _SEE(D.calcDelayReturnA)
         counters.load( returnA, D.calcDelayReturnA * 1000);   // загружаем в счетчик          
         counters.start( returnA );  // запустить таймер автовозврата на канал А 
         D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
     }
     else{ //  ------------------------    ОБЫЧНОЕ ПЕРЕКЛЮЧЕНИЕ ПО ПОТЕРЯМ PING   -------------------
         if( counters.isOver( LockSwitch ) ){  // если потерь подряд или потерь из заданного количества больше порога и таймер запрета перехода на другой канал истек, то    
+            _PRN("port 2 lost ping")
+            _SEE(D.lostPing)
             changePort( D ); 
+            pingResult.clear(); // очищаем, чтоб не влияли потери на предыдущем порту и не вызывали переключения обратно по среднему значению потерь
             counters.start( LockSwitch );  
+            _SEE(D.lostPing)
             if (D.port == 0) {  // канал А теперь
                 Log.writeMsg( F("auto_toA") ); 
             } 
@@ -399,8 +423,10 @@ if( D.autoSW){
   }; // ПЕРЕКЛЮЧЕНИЕ НА ДРУГОЙ КАНАЛ, ЕСЛИ ПОТЕРИ PING БОЛЬШЕ ПОГРОГОВ 
     // прочая обработка в режиме Auto
     //  ------------------  AUTO RETURN TO A  -------------------------------
-    if( (delayReturnA > 0) && ( D.port == 1 ) && counters.isOver( returnA ) ){ // автовозврат настроен и канал В и истекло время автовозврата, то возвращаемся на А
+    if( (config.field.delayReturnA > 0) && ( D.port == 1 ) && counters.isOver( returnA ) ){ // автовозврат настроен и канал В и истекло время автовозврата, то возвращаемся на А
+    _PRN("port 3 auto return")
       changePort( D );     
+      pingResult.clear(); // очищаем, чтоб не влияли потери на предыдущем порту и не вызывали переключения обратно по среднему значению потерь
       counters.start(returnA);    
       Log.writeMsg( F("ret_toA") ); 
       D.autoReturnA = true;  // флаг автовозврата на А
@@ -419,6 +445,9 @@ if( D.autoSW){
         Log.writeMsg( F("rst_auto") ); // запись о сбросе автоматического режима
     };
 };//  если авто режим 
+
+// сброс счетчика посланных пингов после автовозврата
+if( !D.autoReturnA ){ numPingAfterAReturnA = 0; };
 
  // ========================    обработка запросов к вэб интерфейсу   ==========================
 // вроде как для W5500 скорость передачи по spi 8МГц т.е. 1 МБ/сек. Т.к. данные надо считывать из microSD по  spi то получаем 500 кБ сек. 
@@ -492,7 +521,7 @@ if( !buttonOn ){
           //то переключить режим авто и запомнить, что кнопке не была нажата - чтоб не пересечся с переключением канала при коротком нажатии          
           D.autoSW = !(D.autoSW);    
           if( D.autoSW ){               
-            if( (D.port == 1) && ( delayReturnA > 0 ) ){  //если канал B то запустить счетчик автовозврата
+            if( (D.port == 1) && ( config.field.delayReturnA > 0 ) ){  //если канал B то запустить счетчик автовозврата
             D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
             D.calcDelayReturnA = config.field.delayReturnA;  // задержка возврата на А устанавливается по конфигурации, без учета возможных приращений возникших из-за неисправности канала А
             counters.load( returnA, D.calcDelayReturnA * 1000);
@@ -509,7 +538,9 @@ if( !buttonOn ){
                 D.autoReturnA = false; // автовозврат так же сбрасывается при каждом успешном пинге, чтоб исключить приращение времени автовозврата при обычной работе и отсутствии постоянного отказа канала А
                 D.calcDelayReturnA = config.field.delayReturnA;  // задержка возврата на А устанавливается по конфигурации, без учета возможных приращений возникших из-за неисправности канала А
                 counters.load( returnA, D.calcDelayReturnA * 1000);
+                _PRN("port 4 manual")
                 changePort( D );
+                pingResult.clear(); // очищаем, чтоб не влияли потери на предыдущем порту и не вызывали переключения обратно по среднему значению потерь
                 if (D.port == 0) {  Log.writeMsg( F("man_to_A") ); }  // канал А теперь
                 else{  Log.writeMsg( F("man_to_B") );   }  // канал B теперь
             };            
@@ -538,10 +569,10 @@ if( counters.isOver( oneMin ) ){
 
 counters.cycleAll();  // работа счетчиков  задержки
 
-  //  ВРЕМЯ ИСПОЛНЕНИЯ ЦИКЛА  - измеренное время цикла  не более ?? мс
+  //  ВРЕМЯ ИСПОЛНЕНИЯ ЦИКЛА  - измеренное время цикла  не более: пустой цикл до 23 мс, при посылке ping -40 мс, при зпросе на вэб сервер -?? мс
   //  ?? временно
   uint32_t Tcycle = millis() - Tstart;
-  _SEE( Tcycle)
+  //_SEE( Tcycle)
   // задержка для одинакового времени цикла
   // Из-за перехода времени через через 0 запись в лог будет даже без опоздания контроллера ( происходит один раз в 50 дней)
 if (millis() >= Tstart) {                               // если не было перехода через 0 в milis то

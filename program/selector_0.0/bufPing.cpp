@@ -26,12 +26,16 @@
   }
   
   bool TpingResult::isOK( uint16_t _maxLosesFromSent, uint16_t _numPingSent ){  // проверка превышено ли количество потерянных пакетов из общего количества отправленных, если НЕ превышено, то - true
+  /*_PRN("======     ====     =====    =======     ======    =========    ========    =====    ========    ======    =====     ====")
+  _SEE(_maxLosesFromSent)
+  _SEE(_numPingSent)*/
       // проверка входных данных
       if( (_maxLosesFromSent >= LEN_BUF_RES) || ( _numPingSent >= LEN_BUF_RES) || (_maxLosesFromSent > _numPingSent ) ){ return false;   };   
       int lost = 0;
       for(uint16_t i = 0; i < _numPingSent; i++){ 
         if( !pings[i] ){ lost++; }
       };
+      //_SEE(lost)
       if( lost >= _maxLosesFromSent ){ return false; }
       else{ return true; };
   }

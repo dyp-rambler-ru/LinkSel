@@ -31,7 +31,7 @@
 #define MISO 50
 #define SCK 52
 #define CS_W5500 10
-#define CS_SD_CARD 30    //42
+#define CS_SD_CARD 42  // 30
 
 #define W5500_RESET 40  // сброс сетевой карты
 

@@ -9,29 +9,29 @@
 #define DEFAULT_DATE "2000:01:01"
 
 // символьные имена параметров
-const char login[] PROGMEM = "login";  
-const char password[] PROGMEM = "password";
-const char IP[] PROGMEM = "IP";  
-const char maskIP[] PROGMEM = "maskIP";
-const char gatewayIP[] PROGMEM = "gatewayIP";
-const char pingIP[] PROGMEM = "pingIP";  
-const char timePing[] PROGMEM = "timePing";
-const char timeoutPing[] PROGMEM = "timeoutPing";  
-const char maxLosesFromSent[] PROGMEM = "maxLosesFromSent";
-const char numPingSent[] PROGMEM = "numPingSent";  
-const char maxLostPing[] PROGMEM = "maxLostPing";
-const char delayBackSwitch[] PROGMEM = "delayBackSwitch";  
-const char delayReturnA[] PROGMEM = "delayReturnA";
-const char stepDelay[] PROGMEM = "stepDelay";  
-const char maxDelayReturnA[] PROGMEM = "maxDelayReturnA";
-const char timeServerIP[] PROGMEM = "timeServerIP";  
-const char portTimeServer[] PROGMEM = "portTimeServer";
-const char time[] PROGMEM = "time";
-const char date[] PROGMEM = "date";
+const char name_login[] PROGMEM = "login";  
+const char name_password[] PROGMEM = "password";
+const char name_IP[] PROGMEM = "IP";  
+const char name_maskIP[] PROGMEM = "maskIP";
+const char name_gatewayIP[] PROGMEM = "gatewayIP";
+const char name_pingIP[] PROGMEM = "pingIP";  
+const char name_timePing[] PROGMEM = "timePing";
+const char name_timeoutPing[] PROGMEM = "timeoutPing";  
+const char name_maxLosesFromSent[] PROGMEM = "maxLosesFromSent";
+const char name_numPingSent[] PROGMEM = "numPingSent";  
+const char name_maxLostPing[] PROGMEM = "maxLostPing";
+const char name_delayBackSwitch[] PROGMEM = "delayBackSwitch";  
+const char name_delayReturnA[] PROGMEM = "delayReturnA";
+const char name_stepDelay[] PROGMEM = "stepDelay";  
+const char name_maxDelayReturnA[] PROGMEM = "maxDelayReturnA";
+const char name_timeServerIP[] PROGMEM = "timeServerIP";  
+const char name_portTimeServer[] PROGMEM = "portTimeServer";
+const char name_time[] PROGMEM = "time";
+const char name_date[] PROGMEM = "date";
 
 
-// массив символьных имен параметров i=  0           1        2      3           4        5          6           7                  8               9                10               11                12           13                14              15               16         17     18
-const char* const names[] PROGMEM = {  login,   password,   IP,   maskIP , gatewayIP,   pingIP,   timePing,   timeoutPing,   maxLosesFromSent,   numPingSent,   maxLostPing,   delayBackSwitch,   delayReturnA,   stepDelay,   maxDelayReturnA,   timeServerIP,   portTimeServer, date, time };
+// массив символьных имен параметров i=  0                  1           2             3                 4             5                6                  7                  8                     9                10                         11                12                   13                14                         15               16                   17           18
+const char* const names[] PROGMEM = {  name_login,   name_password,   name_IP,   name_maskIP , name_gatewayIP,   name_pingIP,   name_timePing,   name_timeoutPing,   name_maxLosesFromSent,   name_numPingSent,   name_maxLostPing,   name_delayBackSwitch,   name_delayReturnA,   name_stepDelay,   name_maxDelayReturnA,   name_timeServerIP,   name_portTimeServer, name_date, name_time };
 
 struct Tfield{
     // сетевые адреса
